@@ -80,13 +80,32 @@ import Callout from '../../components/Callout.astro';
 - **코드블록**: 언어 뒤에 ` title="파일명"` 을 붙이면 상단 라벨이 파일명으로 표시됩니다. 없으면 언어명이 자동으로 표시됩니다. 복사 버튼은 자동으로 붙습니다.
 - **수식**: `$...$`(인라인), `$$...$$`(블록) 문법으로 KaTeX 수식을 쓸 수 있습니다.
 
-## 배포 전 채워야 할 값 (플레이스홀더)
+## TODO
 
-| 위치 | 항목 |
-| --- | --- |
-| `astro.config.mjs` | `SITE_URL` (실제 GitHub Pages 도메인), 프로젝트 사이트라면 `base` 주석 해제 |
-| `src/config.ts` | `SITE`, `PROFILE`(닉네임/아바타), `SOCIAL_LINKS`(GitHub/LinkedIn/Email), `GISCUS_CONFIG` |
-| `public/avatar.svg` | 실제 프로필 이미지로 교체 |
+- [ ] `SITE_URL` 실제 도메인 반영 (`astro.config.mjs`) — 프로젝트 사이트(`leeelog`)로 배포한다면 `base: '/leeelog'`도 주석 해제 필요
+- [ ] Giscus 연동 (Discussions 카테고리 확정 → [giscus.app](https://giscus.app)에서 값 발급 → `src/config.ts`의 `GISCUS_CONFIG` 채우기)
+- [ ] 반응형 스타일링 (모바일/태블릿 레이아웃 점검)
+- [ ] SEO (메타태그, `sitemap.xml`, RSS, OG 이미지)
+- [ ] 테마 색상 재구성
+- [ ] dev 서버에서 글 본문 수정 시 읽기 시간 배지(`PostCard`의 `{minutes}분`)가 갱신되지 않는 문제 수정 — `src/lib/posts.ts`의 `getAllPosts()` 모듈 레벨 캐시(`cachedPosts`)가 dev 모드 콘텐츠 변경을 반영하지 못하는 게 원인으로 추정됨
+
+> 완료: `SITE`/`PROFILE`/`SOCIAL_LINKS`(GitHub, Email) 및 아바타 이미지(`public/avatar.jpg`) 반영 완료.
+
+### 콘텐츠 관리 방식 (MDX vs DB)
+
+현재는 `src/content/posts/*.mdx` + git으로 글을 관리합니다. 개인 기술 블로그 규모(수백 편 이내)에서는 이 방식을 유지하는 걸 권장합니다:
+
+- 글 작성/수정 이력이 git으로 자동 기록되고, 별도 백엔드·DB 운영 부담이 없습니다.
+- Astro content collections는 수천 개 파일까지도 빌드 성능에 큰 문제가 없습니다.
+- 검색은 이미 정적 인덱스(`search-index.json`)로 처리 중이라 DB 없이도 충분합니다.
+
+아래 상황이 되면 DB(혹은 헤드리스 CMS) 도입을 다시 고려하면 됩니다:
+
+- 비개발자가 git 없이 웹에서 직접 글을 쓰고 싶어질 때
+- 댓글 수/조회수처럼 **런타임에 계속 바뀌는 데이터**를 직접 저장·집계해야 할 때 (지금은 `views`가 frontmatter에 하드코딩된 임시값)
+- 글 수가 수천 단위로 늘어나 빌드 시간이 실제로 병목이 될 때
+
+지금 단계에서는 액션 아이템 아님 — 위 조건 중 하나라도 현실화되면 그때 다시 논의.
 
 ### Giscus 설정 방법
 
