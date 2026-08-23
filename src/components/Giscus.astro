@@ -1,0 +1,53 @@
+---
+import { GISCUS_CONFIG } from '../config';
+---
+
+<section class="mt-12 border-t border-border pt-8">
+  <h2 class="mb-4 text-lg font-bold text-text">댓글</h2>
+  <div id="giscus-container">
+    <script
+      is:inline
+      src="https://giscus.app/client.js"
+      data-repo={GISCUS_CONFIG.repo}
+      data-repo-id={GISCUS_CONFIG.repoId}
+      data-category={GISCUS_CONFIG.category}
+      data-category-id={GISCUS_CONFIG.categoryId}
+      data-mapping={GISCUS_CONFIG.mapping}
+      data-strict={GISCUS_CONFIG.strict}
+      data-reactions-enabled={GISCUS_CONFIG.reactionsEnabled}
+      data-emit-metadata={GISCUS_CONFIG.emitMetadata}
+      data-input-position={GISCUS_CONFIG.inputPosition}
+      data-theme="light"
+      data-lang={GISCUS_CONFIG.lang}
+      crossorigin="anonymous"
+      async
+    ></script>
+  </div>
+</section>
+
+<script>
+  function resolvedTheme(): 'light' | 'dark' {
+    const explicit = document.documentElement.getAttribute('data-theme');
+    if (explicit === 'light' || explicit === 'dark') return explicit;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+
+  function sendGiscusTheme(theme: 'light' | 'dark') {
+    const iframe = document.querySelector<HTMLIFrameElement>('iframe.giscus-frame');
+    iframe?.contentWindow?.postMessage(
+      { giscus: { setConfig: { theme: theme === 'dark' ? 'dark' : 'light' } } },
+      'https://giscus.app',
+    );
+  }
+
+  // giscus 최초 로드는 iframe이 뜬 뒤에만 postMessage가 먹으므로 로드 이벤트를 기다린다.
+  window.addEventListener('message', (event) => {
+    if (event.origin !== 'https://giscus.app') return;
+    if (!(event.data as any)?.giscus?.discussion) return;
+    sendGiscusTheme(resolvedTheme());
+  });
+
+  window.addEventListener('leelog:theme-change', ((event: CustomEvent<'light' | 'dark'>) => {
+    sendGiscusTheme(event.detail);
+  }) as EventListener);
+</script>

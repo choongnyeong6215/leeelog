@@ -1,0 +1,45 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PostCard from '../components/PostCard.astro';
+import { getAllPosts, getPopularPosts, getRecentPosts } from '../lib/posts';
+import { SITE } from '../config';
+
+const posts = await getAllPosts();
+const popularPosts = getPopularPosts(posts, 3);
+const recentPosts = getRecentPosts(posts, 9);
+---
+
+<BaseLayout title={SITE.title} description={SITE.description}>
+  <section class="mb-14">
+    <h2 class="mb-5 text-xl font-bold text-text">📈 인기 글</h2>
+    {
+      popularPosts.length > 0 ? (
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {popularPosts.map((post) => (
+            <PostCard post={post} />
+          ))}
+        </div>
+      ) : (
+        <p class="text-sm text-text-faint">아직 작성된 글이 없습니다.</p>
+      )
+    }
+  </section>
+
+  <section>
+    <div class="mb-5 flex items-center justify-between">
+      <h2 class="text-xl font-bold text-text">📄 최근 포스트</h2>
+      <a href="/blog" class="text-sm font-medium text-accent hover:underline">전체 보기 →</a>
+    </div>
+    {
+      recentPosts.length > 0 ? (
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {recentPosts.map((post) => (
+            <PostCard post={post} />
+          ))}
+        </div>
+      ) : (
+        <p class="text-sm text-text-faint">아직 작성된 글이 없습니다.</p>
+      )
+    }
+  </section>
+</BaseLayout>

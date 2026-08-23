@@ -1,0 +1,107 @@
+---
+import BaseLayout, { type TocHeading } from './BaseLayout.astro';
+import Badge from '../components/Badge.astro';
+import SeriesWidget from '../components/SeriesWidget.astro';
+import PostCard from '../components/PostCard.astro';
+import Giscus from '../components/Giscus.astro';
+import { PROFILE, getCategoryLeaf } from '../config';
+import { getAllPosts, getRelatedPosts, getSeriesPosts, type Post } from '../lib/posts';
+import { formatDateLong } from '../lib/dates';
+
+interface Props {
+  post: Post;
+  headings: TocHeading[];
+}
+
+const { post, headings } = Astro.props;
+const { data } = post;
+
+const categoryInfo = getCategoryLeaf(data.category);
+const allPosts = await getAllPosts();
+const relatedPosts = getRelatedPosts(post, allPosts, 3);
+const seriesPosts = data.series ? getSeriesPosts(allPosts, data.series) : [];
+const seriesIndex = seriesPosts.findIndex((p) => p.id === post.id);
+const isUpdated = Boolean(data.updatedDate && data.updatedDate.valueOf() !== data.pubDate.valueOf());
+---
+
+<BaseLayout title={data.title} description={data.description} headings={headings}>
+  <article>
+    {
+      data.series && seriesIndex >= 0 && (
+        <p class="mb-3 text-sm font-semibold text-accent">
+          {data.series} 시리즈 · 제{seriesIndex + 1}편
+        </p>
+      )
+    }
+    <h1 class="text-3xl font-extrabold leading-tight text-text md:text-4xl">{data.title}</h1>
+    <p class="mt-3 text-sm text-text-faint">
+      {formatDateLong(data.pubDate)}
+      {isUpdated && <span>(수정: {formatDateLong(data.updatedDate!)})</span>}
+      · by {PROFILE.nickname}
+    </p>
+    <p class="mt-4 text-base text-text-muted">{data.description}</p>
+    <div class="mt-4 flex flex-wrap items-center gap-2">
+      <Badge variant="category" text={categoryInfo?.leaf.label ?? data.category} />
+      {data.tags.map((tag) => <Badge variant="tag" text={tag} />)}
+    </div>
+
+    {
+      data.series && seriesPosts.length > 0 && (
+        <SeriesWidget seriesName={data.series} seriesPosts={seriesPosts} currentId={post.id} />
+      )
+    }
+
+    <div class="prose mt-8">
+      <slot />
+    </div>
+
+    {
+      relatedPosts.length > 0 && (
+        <section class="mt-14">
+          <h2 class="mb-4 text-lg font-bold text-text">이 글과 관련된 다른 게시글을 확인해보세요</h2>
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {relatedPosts.map((related) => (
+              <PostCard post={related} />
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    <Giscus />
+  </article>
+</BaseLayout>
+
+<script>
+  const figures = document.querySelectorAll<HTMLElement>('.prose figure[data-rehype-pretty-code-figure]');
+
+  figures.forEach((figure) => {
+    const pre = figure.querySelector('pre');
+    if (!pre) return;
+
+    let toolbar = figure.querySelector('figcaption');
+    if (!toolbar) {
+      toolbar = document.createElement('figcaption');
+      toolbar.textContent = pre.getAttribute('data-language') || 'text';
+      figure.insertBefore(toolbar, pre);
+    }
+    toolbar.classList.add('code-block-toolbar');
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'code-copy-btn';
+    button.textContent = '복사';
+    button.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(pre.innerText);
+        button.textContent = '복사됨!';
+        setTimeout(() => {
+          button.textContent = '복사';
+        }, 1500);
+      } catch {
+        // 클립보드 권한이 없는 환경은 무시
+      }
+    });
+    toolbar.appendChild(button);
+  });
+</script>

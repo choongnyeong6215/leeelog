@@ -1,0 +1,14 @@
+---
+import ProfileCard from './ProfileCard.astro';
+import CategoryTree from './CategoryTree.astro';
+import { getAllPosts } from '../lib/posts';
+import { getCategoryTreeWithCounts } from '../lib/categories';
+
+const posts = await getAllPosts();
+const categoryGroups = getCategoryTreeWithCounts(posts);
+---
+
+<aside class="flex flex-col gap-4 lg:sticky lg:top-20 lg:self-start">
+  <ProfileCard />
+  <CategoryTree groups={categoryGroups} />
+</aside>

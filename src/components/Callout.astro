@@ -1,0 +1,13 @@
+---
+interface Props {
+  emoji?: string;
+}
+const { emoji = 'ℹ️' } = Astro.props;
+---
+
+<div class="my-6 flex gap-3 rounded-r-lg border-l-4 border-callout-border bg-callout-bg px-4 py-3 text-callout-text">
+  <span class="text-lg leading-none" aria-hidden="true">{emoji}</span>
+  <div class="text-sm leading-relaxed [&>p]:m-0">
+    <slot />
+  </div>
+</div>

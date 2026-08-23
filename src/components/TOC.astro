@@ -1,0 +1,88 @@
+---
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+interface Props {
+  headings: Heading[];
+}
+const { headings } = Astro.props;
+const items = headings.filter((h) => h.depth === 2 || h.depth === 3);
+---
+
+{
+  items.length > 0 && (
+    <nav
+      aria-label="목차"
+      class="lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:self-start lg:overflow-y-auto"
+    >
+      <p class="mb-3 text-xs font-bold tracking-wide text-text-muted">목차</p>
+      <ul class="space-y-0.5 border-l border-border text-sm">
+        {items.map((h) => (
+          <li>
+            <a
+              href={`#${h.slug}`}
+              data-toc-link
+              data-target={h.slug}
+              class:list={[
+                '-ml-px block border-l-2 border-transparent py-1 pl-3 text-text-muted transition-colors hover:text-text',
+                h.depth === 3 && 'pl-6 text-[13px]',
+              ]}
+            >
+              {h.text}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}
+
+<script>
+  const links = Array.from(document.querySelectorAll<HTMLAnchorElement>('[data-toc-link]'));
+
+  function setActive(id: string | null) {
+    for (const link of links) {
+      const active = link.dataset.target === id;
+      link.classList.toggle('border-accent', active);
+      link.classList.toggle('font-bold', active);
+      link.classList.toggle('text-text', active);
+      link.classList.toggle('text-text-muted', !active);
+    }
+  }
+
+  if (links.length > 0) {
+    const targets = links
+      .map((link) => (link.dataset.target ? document.getElementById(link.dataset.target) : null))
+      .filter((el): el is HTMLElement => Boolean(el));
+
+    // 섹션 사이 간격이 넓으면 IntersectionObserver의 관찰 밴드에 아무 헤딩도 걸리지 않는
+    // 구간이 생겨 하이라이트가 사라진다. 대신 "가장 최근에 지나온 헤딩"을 스크롤 위치로 직접 계산한다.
+    const OFFSET = 120;
+    let ticking = false;
+
+    function update() {
+      ticking = false;
+      let currentId: string | null = null;
+      for (const el of targets) {
+        if (el.getBoundingClientRect().top - OFFSET <= 0) {
+          currentId = el.id;
+        } else {
+          break;
+        }
+      }
+      setActive(currentId ?? targets[0]?.id ?? null);
+    }
+
+    function onScroll() {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(update);
+      }
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    update();
+  }
+</script>

@@ -1,0 +1,105 @@
+---
+title: "고루틴과 채널로 동시성 다루기"
+description: "Go의 고루틴과 채널을 이용해 동시성 프로그램을 안전하게 작성하는 기본기를 정리한다."
+pubDate: 2024-02-02
+updatedDate: 2024-02-02
+category: "golang"
+tags: ["Golang", "Concurrency", "Backend"]
+draft: false
+pinned: false
+views: 173
+---
+
+import Callout from '../../components/Callout.astro';
+
+<Callout emoji="💡">틀린 내용이나 오타는 댓글/메일로 제보해주시면 감사하겠습니다!</Callout>
+
+리눅스 운영 업무를 하다 보면 모니터링 에이전트나 배치 도구를 Go로 짜야 할 일이 종종 생긴다. Go 동시성의 핵심인 고루틴과 채널을 정리해봤다.
+
+## 고루틴은 왜 가벼운가
+
+OS 스레드는 보통 수 MB의 스택을 미리 할당하지만, 고루틴은 2KB 남짓한 작은 스택으로 시작해서 필요할 때 늘어난다. 그래서 수만 개를 띄워도 부담이 적다.
+
+```go
+func main() {
+    for i := 0; i < 5; i++ {
+        go func(id int) {
+            fmt.Println("worker", id, "started")
+        }(i)
+    }
+    time.Sleep(100 * time.Millisecond)
+}
+```
+
+`go` 키워드 하나로 함수 호출이 별도 고루틴에서 비동기로 실행된다. 다만 `main`이 먼저 끝나버리면 아직 실행되지 않은 고루틴은 그대로 버려진다.
+
+## 채널로 통신하기
+
+Go의 철학은 "메모리를 공유해서 통신하지 말고, 통신해서 메모리를 공유하라"다. 채널이 그 통로 역할을 한다.
+
+```go title="pipeline.go"
+func worker(jobs <-chan int, results chan<- int) {
+    for j := range jobs {
+        results <- j * j
+    }
+}
+
+func main() {
+    jobs := make(chan int, 10)
+    results := make(chan int, 10)
+
+    for w := 1; w <= 3; w++ {
+        go worker(jobs, results)
+    }
+
+    for i := 1; i <= 5; i++ {
+        jobs <- i
+    }
+    close(jobs)
+
+    for i := 0; i < 5; i++ {
+        fmt.Println(<-results)
+    }
+}
+```
+
+워커 3개가 `jobs` 채널에서 작업을 꺼내가고, 결과를 `results` 채널에 넣는 전형적인 워커 풀 패턴이다. `close(jobs)`로 더 이상 작업이 없음을 알리는 걸 잊으면 워커들이 영원히 대기한다.
+
+## select와 타임아웃 처리
+
+여러 채널을 동시에 기다릴 때는 `select`를 쓴다. 네트워크 호출이나 외부 API 연동에서 타임아웃을 걸 때 특히 자주 쓰인다.
+
+```go
+select {
+case res := <-resultCh:
+    fmt.Println("결과:", res)
+case <-time.After(3 * time.Second):
+    fmt.Println("타임아웃")
+}
+```
+
+## 흔한 실수: 고루틴 누수
+
+채널을 읽어줄 사람이 아무도 없는데 계속 값을 보내려고 하면, 그 고루틴은 영원히 블로킹된 채로 남는다. `context.Context`로 취소 신호를 넘기고, 고루틴 내부에서도 `ctx.Done()`을 함께 `select`하는 습관을 들이는 게 좋다.
+
+```go
+func worker(ctx context.Context, jobs <-chan int) {
+    for {
+        select {
+        case <-ctx.Done():
+            return
+        case j, ok := <-jobs:
+            if !ok {
+                return
+            }
+            process(j)
+        }
+    }
+}
+```
+
+## Reference
+
+- [Go Blog — Share Memory By Communicating](https://go.dev/blog/codelab-share)
+- [Go Docs — package context](https://pkg.go.dev/context)
+- [Go Tour — Concurrency](https://go.dev/tour/concurrency/1)

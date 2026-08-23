@@ -1,0 +1,309 @@
+@import 'tailwindcss';
+@import 'katex/dist/katex.min.css';
+
+/*
+ * 디자인 토큰
+ * 라이트 값은 @theme 안에 정의(=Tailwind 유틸리티의 기본값이자 CSS 변수 소스),
+ * 다크 값은 아래에서 같은 변수명을 다시 정의해 오버라이드한다.
+ * 우선순위: 명시적 data-theme > 시스템 prefers-color-scheme.
+ */
+@theme {
+  --color-bg: #f8fafc;
+  --color-surface: #ffffff;
+  --color-surface-hover: #f1f5f9;
+  --color-border: #e2e8f0;
+  --color-text: #0f172a;
+  --color-text-muted: #64748b;
+  --color-text-faint: #94a3b8;
+  --color-accent: #2563eb;
+  --color-accent-fg: #ffffff;
+  --color-accent-soft: #eff6ff;
+
+  --color-badge-bg: #0f172a;
+  --color-badge-fg: #f8fafc;
+  --color-tag-bg: #f1f5f9;
+  --color-tag-fg: #475569;
+
+  --color-callout-bg: #eff6ff;
+  --color-callout-border: #3b82f6;
+  --color-callout-text: #1e3a8a;
+
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Segoe UI', Roboto,
+    Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, 'SFMono-Regular', Menlo, Consolas, 'Liberation Mono', monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --color-bg: #0a0f1c;
+    --color-surface: #111827;
+    --color-surface-hover: #1a2333;
+    --color-border: #1f2937;
+    --color-text: #e5e7eb;
+    --color-text-muted: #9ca3af;
+    --color-text-faint: #6b7280;
+    --color-accent: #60a5fa;
+    --color-accent-fg: #0a0f1c;
+    --color-accent-soft: #13233f;
+
+    --color-badge-bg: #e5e7eb;
+    --color-badge-fg: #0a0f1c;
+    --color-tag-bg: #1a2333;
+    --color-tag-fg: #cbd5e1;
+
+    --color-callout-bg: #10203a;
+    --color-callout-border: #3b82f6;
+    --color-callout-text: #bfdbfe;
+  }
+}
+
+:root[data-theme='dark'] {
+  --color-bg: #0a0f1c;
+  --color-surface: #111827;
+  --color-surface-hover: #1a2333;
+  --color-border: #1f2937;
+  --color-text: #e5e7eb;
+  --color-text-muted: #9ca3af;
+  --color-text-faint: #6b7280;
+  --color-accent: #60a5fa;
+  --color-accent-fg: #0a0f1c;
+  --color-accent-soft: #13233f;
+
+  --color-badge-bg: #e5e7eb;
+  --color-badge-fg: #0a0f1c;
+  --color-tag-bg: #1a2333;
+  --color-tag-fg: #cbd5e1;
+
+  --color-callout-bg: #10203a;
+  --color-callout-border: #3b82f6;
+  --color-callout-text: #bfdbfe;
+}
+
+html {
+  color-scheme: light;
+}
+html[data-theme='dark'] {
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme='light']) {
+    color-scheme: dark;
+  }
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  line-height: 1.7;
+}
+
+::selection {
+  background-color: var(--color-accent);
+  color: var(--color-accent-fg);
+}
+
+/* ---------------------------------------------------------------------- */
+/* 본문(MDX) 타이포그래피                                                    */
+/* ---------------------------------------------------------------------- */
+.prose {
+  color: var(--color-text);
+  max-width: 72ch;
+}
+.prose h1 {
+  font-size: 1.875rem;
+  font-weight: 800;
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+.prose h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--color-border);
+}
+.prose h2:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+.prose h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+}
+.prose p {
+  margin-top: 0;
+  margin-bottom: 1.25rem;
+}
+.prose a {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.prose ul,
+.prose ol {
+  margin-bottom: 1.25rem;
+  padding-left: 1.5rem;
+}
+.prose ul {
+  list-style: disc;
+}
+.prose ol {
+  list-style: decimal;
+}
+.prose li {
+  margin-bottom: 0.35rem;
+}
+.prose blockquote {
+  border-left: 3px solid var(--color-accent);
+  background-color: var(--color-accent-soft);
+  padding: 0.75rem 1rem;
+  margin: 1.5rem 0;
+  border-radius: 0 0.5rem 0.5rem 0;
+  color: var(--color-text-muted);
+}
+.prose blockquote p {
+  margin-bottom: 0;
+}
+.prose img {
+  border-radius: 0.75rem;
+  border: 1px solid var(--color-border);
+  margin: 1.5rem 0;
+  max-width: 100%;
+}
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.9rem;
+}
+.prose th,
+.prose td {
+  border: 1px solid var(--color-border);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+.prose th {
+  background-color: var(--color-surface-hover);
+  font-weight: 700;
+}
+.prose :not(pre) > code {
+  background-color: var(--color-surface-hover);
+  border: 1px solid var(--color-border);
+  border-radius: 0.35rem;
+  padding: 0.1rem 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+}
+
+/* ---------------------------------------------------------------------- */
+/* 코드블록 (rehype-pretty-code) — 사이트 테마와 무관하게 항상 다크           */
+/* ---------------------------------------------------------------------- */
+.prose figure[data-rehype-pretty-code-figure] {
+  margin: 1.5rem 0;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 1px solid #1f2937;
+  background-color: #0d1117;
+}
+.prose figure[data-rehype-pretty-code-figure] figcaption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: #9ca3af;
+  background-color: #161b22;
+  border-bottom: 1px solid #1f2937;
+}
+.prose figure[data-rehype-pretty-code-figure] pre {
+  margin: 0;
+  padding: 1rem;
+  overflow-x: auto;
+  background-color: transparent !important;
+}
+.prose figure[data-rehype-pretty-code-figure] code {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  line-height: 1.6;
+  counter-reset: line;
+}
+.prose figure[data-rehype-pretty-code-figure] [data-line] {
+  padding: 0 0.25rem;
+}
+.code-block-toolbar {
+  position: relative;
+}
+.code-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #9ca3af;
+  background-color: transparent;
+  border: 1px solid #30363d;
+  border-radius: 0.35rem;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.7rem;
+  cursor: pointer;
+}
+.code-copy-btn:hover {
+  color: #e5e7eb;
+  border-color: #6b7280;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Blog 페이지 카테고리/태그 필터 칩                                          */
+/* ---------------------------------------------------------------------- */
+.filter-chip {
+  border-radius: 9999px;
+  border: 1px solid var(--color-border);
+  padding: 0.35rem 0.85rem;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  background-color: var(--color-surface);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.filter-chip:hover {
+  background-color: var(--color-surface-hover);
+  color: var(--color-text);
+}
+.filter-chip.is-active {
+  background-color: var(--color-accent);
+  color: var(--color-accent-fg);
+  border-color: var(--color-accent);
+}
+
+/* ---------------------------------------------------------------------- */
+/* 테마 토글 아이콘 전환 (라이트=달 아이콘 노출, 다크=해 아이콘 노출)          */
+/* ---------------------------------------------------------------------- */
+.theme-icon-sun {
+  display: none;
+}
+.theme-icon-moon {
+  display: block;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .theme-icon-sun {
+    display: block;
+  }
+  :root:not([data-theme='light']) .theme-icon-moon {
+    display: none;
+  }
+}
+:root[data-theme='dark'] .theme-icon-sun {
+  display: block;
+}
+:root[data-theme='dark'] .theme-icon-moon {
+  display: none;
+}
+:root[data-theme='light'] .theme-icon-sun {
+  display: none;
+}
+:root[data-theme='light'] .theme-icon-moon {
+  display: block;
+}

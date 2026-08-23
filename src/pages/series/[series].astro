@@ -1,0 +1,42 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getAllPosts, getPostUrl, getSeriesList, seriesSlug, type SeriesSummary } from '../../lib/posts';
+
+export async function getStaticPaths() {
+  const posts = await getAllPosts();
+  const seriesList = getSeriesList(posts);
+  return seriesList.map((series) => ({
+    params: { series: seriesSlug(series.name) },
+    props: { series },
+  }));
+}
+
+interface Props {
+  series: SeriesSummary;
+}
+
+const { series } = Astro.props;
+---
+
+<BaseLayout title={series.name} description={`${series.name} 시리즈 글 목록`}>
+  <p class="mb-2 text-sm font-semibold text-accent">시리즈</p>
+  <h1 class="mb-2 text-2xl font-extrabold text-text">{series.name}</h1>
+  <p class="mb-6 text-sm text-text-muted">총 {series.posts.length}편의 글</p>
+  <ol class="space-y-3">
+    {
+      series.posts.map((post, i) => (
+        <li>
+          <a
+            href={getPostUrl(post)}
+            class="flex items-center gap-3 rounded-xl border border-border bg-surface p-4 transition-colors hover:border-accent/40"
+          >
+            <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-badge-bg text-sm font-bold text-badge-fg">
+              {i + 1}
+            </span>
+            <span class="font-medium text-text">{post.data.title}</span>
+          </a>
+        </li>
+      ))
+    }
+  </ol>
+</BaseLayout>

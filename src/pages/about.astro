@@ -1,0 +1,59 @@
+---
+import { Icon } from 'astro-icon/components';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Badge from '../components/Badge.astro';
+import { PROFILE, SOCIAL_LINKS } from '../config';
+import { getTechStackBadges } from '../lib/techStack';
+
+const techBadges = getTechStackBadges();
+---
+
+<BaseLayout title="About" description={`${PROFILE.nickname}'s Tech Blog 소개 페이지`}>
+  <header class="mb-10">
+    <h1 class="mb-2 text-2xl font-extrabold text-text">👤 About</h1>
+    <p class="text-text-muted">{PROFILE.nickname}'s Tech Blog</p>
+  </header>
+
+  <section class="mb-10">
+    <p class="leading-relaxed text-text">
+      개인 공부 기록용 기술 블로그입니다. Linux 운영, 네트워크, 컨테이너, 클라우드 등을 다룹니다.
+    </p>
+  </section>
+
+  <section class="mb-10">
+    <h2 class="mb-4 text-lg font-bold text-text">🚧 현재 진행 중</h2>
+    <ul class="space-y-2 text-sm text-text-muted">
+      <li>✅ 블로그 초기 구축 (Astro + Tailwind + MDX)</li>
+      <li>🔄 리눅스 · 네트워크 기본기 정리</li>
+      <li>⏳ 리눅스 엔지니어 이직 준비</li>
+    </ul>
+  </section>
+
+  <section class="mb-10">
+    <h2 class="mb-4 text-lg font-bold text-text">📫 Contact</h2>
+    <ul class="space-y-2">
+      {
+        SOCIAL_LINKS.map((link) => (
+          <li>
+            <a
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-2 text-sm text-accent hover:underline"
+            >
+              <Icon name={link.icon} class="h-4 w-4" />
+              {link.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section>
+    <h2 class="mb-4 text-lg font-bold text-text">⚡ Tech Stack</h2>
+    <div class="flex flex-wrap gap-2">
+      {techBadges.map((badge) => <Badge variant="tech" text={badge.label} version={badge.version} />)}
+    </div>
+  </section>
+</BaseLayout>

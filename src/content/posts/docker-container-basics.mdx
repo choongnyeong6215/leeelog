@@ -1,0 +1,81 @@
+---
+title: "리눅스 컨테이너의 원리"
+description: "도커의 근간이 되는 리눅스 컨테이너에 대해 알아보자"
+pubDate: 2024-01-14
+updatedDate: 2024-01-20
+category: "docker"
+tags: ["Docker", "Container", "Linux"]
+series: "Docker 완전 정복"
+seriesOrder: 1
+draft: false
+pinned: true
+views: 610
+---
+
+import Callout from '../../components/Callout.astro';
+
+<Callout emoji="ℹ️">개인 공부 기록용 블로그입니다.</Callout>
+
+"컨테이너는 가벼운 가상머신이다"라는 설명을 자주 듣지만, 정확히는 그렇지 않다. 컨테이너는 별도의 커널을 띄우지 않는다. 호스트 커널의 기능 두 가지, **namespace**와 **cgroups**를 조합해 "격리된 것처럼 보이는" 프로세스를 만들 뿐이다.
+
+## 컨테이너는 가상머신이 아니다
+
+가상머신은 하이퍼바이저 위에서 커널까지 통째로 새로 띄운다. 반면 컨테이너는 호스트와 커널을 공유하는 일반 프로세스다.
+
+```bash
+~/Code ❯ docker run -d --name web nginx:alpine
+~/Code ❯ ps -ef | grep nginx
+root      3211  3190  0 10:02 ?        00:00:00 nginx: master process
+```
+
+호스트에서 `ps`로 보면 컨테이너 안의 프로세스가 그냥 평범한 PID로 보인다. 격리되어 있을 뿐, 별개의 커널이 도는 게 아니라는 뜻이다.
+
+## 격리의 핵심: Namespace
+
+Namespace는 프로세스가 보는 "세계"를 나눠주는 커널 기능이다.
+
+| Namespace | 격리 대상 |
+| --- | --- |
+| PID | 프로세스 ID 공간 |
+| NET | 네트워크 인터페이스, 라우팅 테이블 |
+| MNT | 마운트 포인트 |
+| UTS | 호스트명, 도메인명 |
+| IPC | 프로세스 간 통신 자원 |
+| USER | UID/GID 매핑 |
+
+`unshare` 명령으로 namespace를 직접 만들어볼 수 있다.
+
+```bash title="~/Code ❯ unshare 실습"
+~/Code ❯ sudo unshare --pid --fork --mount-proc bash
+bash-5.1# ps aux
+USER   PID  ...  COMMAND
+root     1  ...  bash
+root     8  ...  ps aux
+```
+
+새 PID namespace 안에서는 방금 띄운 bash가 PID 1이 된다. 도커가 컨테이너를 "격리된 미니 시스템"처럼 보이게 만드는 마법의 실체가 바로 이것이다.
+
+## 자원 제한의 핵심: cgroups
+
+Namespace가 "무엇을 보여줄지"를 정한다면, cgroups(control groups)는 "얼마나 쓰게 할지"를 정한다.
+
+```bash
+~/Code ❯ cat /sys/fs/cgroup/system.slice/docker-<id>.scope/memory.max
+536870912
+```
+
+컨테이너에 `docker run -m 512m`로 메모리 제한을 걸면, 실제로는 이 cgroup 파일에 값을 써넣는 것과 같다.
+
+## 이미지, 그리고 UnionFS
+
+> 이미지는 레이어의 스택이다. 각 레이어는 읽기 전용이고, 컨테이너가 실행되는 순간 맨 위에 쓰기 가능한 레이어가 하나 더 얹힌다.
+
+![컨테이너 레이어 구조](/images/container-layers.svg)
+
+`Dockerfile`의 각 명령(`FROM`, `RUN`, `COPY`)이 레이어 하나씩을 만든다. 그래서 자주 바뀌는 레이어(애플리케이션 코드)를 `Dockerfile` 아래쪽에 두면 캐시를 더 잘 활용할 수 있다.
+
+## Reference
+
+- [Docker Docs — Containerization](https://docs.docker.com/guides/docker-overview/)
+- [man7.org — namespaces(7)](https://man7.org/linux/man-pages/man7/namespaces.7.html)
+- [man7.org — cgroups(7)](https://man7.org/linux/man-pages/man7/cgroups.7.html)

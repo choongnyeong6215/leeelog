@@ -1,0 +1,29 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostCard from '../../components/PostCard.astro';
+import { getAllPosts, getAllTags, getPostsByTag, paramSlug } from '../../lib/posts';
+
+export async function getStaticPaths() {
+  const posts = await getAllPosts();
+  const tags = getAllTags(posts);
+  return tags.map((t) => ({
+    params: { tag: paramSlug(t.tag) },
+    props: { tagName: t.tag },
+  }));
+}
+
+interface Props {
+  tagName: string;
+}
+
+const { tagName } = Astro.props;
+const posts = await getAllPosts();
+const tagged = getPostsByTag(posts, tagName);
+---
+
+<BaseLayout title={`#${tagName}`} description={`#${tagName} 태그가 달린 글 목록`}>
+  <h1 class="mb-6 text-2xl font-extrabold text-text">#{tagName}</h1>
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    {tagged.map((post) => <PostCard post={post} />)}
+  </div>
+</BaseLayout>

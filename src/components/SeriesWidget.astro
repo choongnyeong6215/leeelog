@@ -1,0 +1,44 @@
+---
+import { getPostUrl, seriesSlug, type Post } from '../lib/posts';
+
+interface Props {
+  seriesName: string;
+  seriesPosts: Post[];
+  currentId: string;
+}
+
+const { seriesName, seriesPosts, currentId } = Astro.props;
+---
+
+<details class="my-6 rounded-xl border border-border bg-surface" open>
+  <summary class="flex cursor-pointer list-none items-center justify-between gap-2 px-4 py-3">
+    <span class="text-sm">
+      <span class="font-bold text-text">시리즈 {seriesName}</span>
+      <span class="text-text-muted">· 총 {seriesPosts.length}편의 글</span>
+    </span>
+    <a href={`/series/${seriesSlug(seriesName)}`} class="shrink-0 text-xs font-medium text-accent hover:underline">
+      전체보기 &gt;
+    </a>
+  </summary>
+  <ol class="space-y-1 border-t border-border px-4 py-3">
+    {
+      seriesPosts.map((post, index) => {
+        const isCurrent = post.id === currentId;
+        return (
+          <li>
+            <a
+              href={getPostUrl(post)}
+              class:list={[
+                'flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-colors',
+                isCurrent ? 'bg-accent-soft font-bold text-accent' : 'text-text-muted hover:text-text',
+              ]}
+            >
+              <span class="w-5 shrink-0 text-xs text-text-faint">{index + 1}.</span>
+              <span class="line-clamp-1">{post.data.title}</span>
+            </a>
+          </li>
+        );
+      })
+    }
+  </ol>
+</details>
