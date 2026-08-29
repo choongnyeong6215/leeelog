@@ -1,4 +1,6 @@
 ---
+import { getPageWindow } from '../lib/pagination';
+
 interface Props {
   currentPage: number;
   totalPages: number;
@@ -10,49 +12,65 @@ function pageHref(page: number): string {
   return page === 1 ? '/' : `/page/${page}`;
 }
 
-const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+const { pages: windowPages, showFirst, showLeftEllipsis, showLast, showRightEllipsis } = getPageWindow(
+  currentPage,
+  totalPages,
+);
+
 const prevHref = currentPage > 1 ? pageHref(currentPage - 1) : null;
 const nextHref = currentPage < totalPages ? pageHref(currentPage + 1) : null;
+
+const navLinkClass =
+  'rounded-lg border border-border px-3 py-1.5 text-sm text-text-muted transition-colors hover:bg-surface-hover hover:text-text';
+const navDisabledClass = 'rounded-lg border border-border px-3 py-1.5 text-sm text-text-faint opacity-40';
+const pageLinkClass = (active: boolean) =>
+  [
+    'flex h-9 w-9 items-center justify-center rounded-lg text-sm font-medium transition-colors',
+    active ? 'bg-accent text-accent-fg' : 'text-text-muted hover:bg-surface-hover hover:text-text',
+  ].join(' ');
 ---
 
 {
   totalPages > 1 && (
     <nav aria-label="페이지 네비게이션" class="mt-8 flex flex-wrap items-center justify-center gap-2">
       {prevHref ? (
-        <a
-          href={prevHref}
-          class="rounded-lg border border-border px-3 py-1.5 text-sm text-text-muted transition-colors hover:bg-surface-hover hover:text-text"
-        >
+        <a href={prevHref} class={navLinkClass}>
           이전
         </a>
       ) : (
-        <span class="rounded-lg border border-border px-3 py-1.5 text-sm text-text-faint opacity-40">이전</span>
+        <span aria-disabled="true" class={navDisabledClass}>
+          이전
+        </span>
       )}
+
       <div class="flex flex-wrap items-center gap-1">
-        {pages.map((page) => (
-          <a
-            href={pageHref(page)}
-            aria-current={page === currentPage ? 'page' : undefined}
-            class:list={[
-              'flex h-9 w-9 items-center justify-center rounded-lg text-sm font-medium transition-colors',
-              page === currentPage
-                ? 'bg-accent text-accent-fg'
-                : 'text-text-muted hover:bg-surface-hover hover:text-text',
-            ]}
-          >
+        {showFirst && (
+          <a href={pageHref(1)} class={pageLinkClass(false)}>
+            1
+          </a>
+        )}
+        {showLeftEllipsis && <span class="flex h-9 w-9 items-center justify-center text-sm text-text-faint">…</span>}
+        {windowPages.map((page) => (
+          <a href={pageHref(page)} aria-current={page === currentPage ? 'page' : undefined} class={pageLinkClass(page === currentPage)}>
             {page}
           </a>
         ))}
+        {showRightEllipsis && <span class="flex h-9 w-9 items-center justify-center text-sm text-text-faint">…</span>}
+        {showLast && (
+          <a href={pageHref(totalPages)} class={pageLinkClass(false)}>
+            {totalPages}
+          </a>
+        )}
       </div>
+
       {nextHref ? (
-        <a
-          href={nextHref}
-          class="rounded-lg border border-border px-3 py-1.5 text-sm text-text-muted transition-colors hover:bg-surface-hover hover:text-text"
-        >
+        <a href={nextHref} class={navLinkClass}>
           다음
         </a>
       ) : (
-        <span class="rounded-lg border border-border px-3 py-1.5 text-sm text-text-faint opacity-40">다음</span>
+        <span aria-disabled="true" class={navDisabledClass}>
+          다음
+        </span>
       )}
     </nav>
   )
