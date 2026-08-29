@@ -1,10 +1,14 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import PostListItem from '../components/PostListItem.astro';
+import PostList from '../components/PostList.astro';
+import Pagination from '../components/Pagination.astro';
 import { getAllPosts } from '../lib/posts';
+import { getTotalPages, POSTS_PAGE_SIZE } from '../lib/pagination';
 import { SITE } from '../config';
 
 const posts = await getAllPosts();
+const totalPages = getTotalPages(posts.length);
+const pagePosts = posts.slice(0, POSTS_PAGE_SIZE);
 ---
 
 <BaseLayout title={SITE.title} description={SITE.description}>
@@ -13,14 +17,8 @@ const posts = await getAllPosts();
     {
       posts.length > 0 ? (
         <>
-          <div id="recent-post-list" class="flex flex-col gap-4">
-            {posts.map((post) => (
-              <div data-post-item>
-                <PostListItem post={post} />
-              </div>
-            ))}
-          </div>
-          <div id="recent-post-sentinel" class="h-1"></div>
+          <PostList posts={pagePosts} />
+          <Pagination currentPage={1} totalPages={totalPages} />
         </>
       ) : (
         <p class="text-sm text-text-faint">아직 작성된 글이 없습니다.</p>
@@ -28,37 +26,3 @@ const posts = await getAllPosts();
     }
   </section>
 </BaseLayout>
-
-<script>
-  const PAGE_SIZE = 10;
-  const items = Array.from(document.querySelectorAll<HTMLElement>('[data-post-item]'));
-  const sentinel = document.getElementById('recent-post-sentinel');
-  let visibleCount = 0;
-  let observer: IntersectionObserver | null = null;
-
-  function revealMore() {
-    if (visibleCount >= items.length) return;
-    const next = Math.min(visibleCount + PAGE_SIZE, items.length);
-    for (let i = visibleCount; i < next; i++) {
-      items[i].classList.remove('hidden');
-    }
-    visibleCount = next;
-    if (visibleCount >= items.length) {
-      observer?.disconnect();
-      sentinel?.classList.add('hidden');
-    }
-  }
-
-  items.forEach((item) => item.classList.add('hidden'));
-  revealMore();
-
-  if (sentinel && items.length > PAGE_SIZE) {
-    observer = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) revealMore();
-      },
-      { rootMargin: '400px' },
-    );
-    observer.observe(sentinel);
-  }
-</script>

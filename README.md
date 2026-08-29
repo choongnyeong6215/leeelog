@@ -24,7 +24,7 @@ src/
 
 | 경로 | 파일 |
 | --- | --- |
-| `/` | `src/pages/index.astro` — 최근 포스트 목록, 무한 스크롤(클라이언트 사이드 페이지네이션) |
+| `/`, `/page/<n>` | `src/pages/index.astro`, `src/pages/page/[page].astro` — 최근 포스트 목록, 페이지당 10개(`src/lib/pagination.ts`)씩 정적 페이지네이션 |
 | `/blog` | `src/pages/blog/index.astro` — 전체 글, 카테고리/태그 클라이언트 필터 + 더보기 |
 | `/series`, `/series/<이름>` | `src/pages/series/` |
 | `/tags`, `/tags/<태그>` | `src/pages/tags/` |
