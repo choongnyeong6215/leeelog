@@ -1,0 +1,36 @@
+---
+title: "Go 모듈과 의존성 관리(go.mod)"
+description: "go.mod, go.sum이 하는 역할과 버전 관리 명령어를 정리한다."
+pubDate: 2024-08-19
+category: "golang"
+tags: ["Golang", "Module"]
+---
+
+GOPATH 시절의 의존성 관리를 겪어본 사람이라면 Go 모듈이 얼마나 편해졌는지 체감할 것이다.
+
+## go.mod 기본 구조
+
+```go
+module github.com/cnl/myapp
+
+go 1.22
+
+require (
+    github.com/gin-gonic/gin v1.9.1
+)
+```
+
+## 자주 쓰는 명령어
+
+```bash
+go mod init github.com/cnl/myapp
+go get github.com/gin-gonic/gin@v1.9.1
+go mod tidy
+go mod verify
+```
+
+`go mod tidy`는 실제로 쓰이지 않는 의존성을 정리하고, import했지만 go.mod에 없는 패키지를 추가해준다. 커밋 전에 습관적으로 돌려주는 게 좋다.
+
+## go.sum의 역할
+
+`go.sum`은 의존성 트리 전체의 체크섬을 기록해서, 같은 버전이라도 내용이 바뀐 패키지를 받아오면 빌드가 실패하도록 막아준다. 두 파일 다 반드시 커밋해야 하는 이유다.

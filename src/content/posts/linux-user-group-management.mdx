@@ -1,0 +1,31 @@
+---
+title: "리눅스 사용자와 그룹 관리 실전"
+description: "useradd, usermod, /etc/sudoers까지 리눅스 계정 관리의 핵심을 정리한다."
+pubDate: 2024-06-10
+category: "linux"
+tags: ["Linux", "Admin"]
+---
+
+서버 여러 대를 운영하다 보면 계정 관리가 생각보다 중요한 일이라는 걸 깨닫는다.
+
+## 사용자와 그룹 생성
+
+```bash
+sudo groupadd deploy
+sudo useradd -m -s /bin/bash -G deploy alice
+sudo usermod -aG docker alice
+```
+
+`-aG`에서 `-a`(append)를 빼먹으면 기존 보조 그룹이 전부 날아간다는 걸 한 번 겪고 나서야 습관이 됐다.
+
+## sudo 권한 세밀하게 주기
+
+`/etc/sudoers`를 직접 고치기보다는 `visudo`로 문법 오류를 방지하고, `/etc/sudoers.d/`에 그룹 단위 파일을 따로 두는 게 관리하기 편하다.
+
+```
+%deploy ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart myapp
+```
+
+## 계정 잠금과 만료
+
+퇴사자 계정은 삭제보다 `usermod -L`(잠금)이나 `chage -E`(만료일 설정)로 먼저 비활성화해두면, 소유 파일 정리 전에 계정이 통째로 사라지는 사고를 막을 수 있다.

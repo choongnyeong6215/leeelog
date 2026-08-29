@@ -1,0 +1,32 @@
+---
+title: "리눅스 로그 관리: journalctl과 rsyslog"
+description: "systemd 저널과 전통적인 rsyslog가 로그를 다루는 방식의 차이를 정리한다."
+pubDate: 2024-04-01
+category: "linux"
+tags: ["Linux", "Logging"]
+---
+
+장애 대응의 시작은 결국 로그를 얼마나 빨리 찾아내느냐다.
+
+## journalctl 기본기
+
+```bash
+journalctl -u myapp.service --since "1 hour ago"
+journalctl -u myapp.service -f
+journalctl -p err -b
+```
+
+`-p err`처럼 우선순위로 필터링하면 노이즈를 크게 줄일 수 있다. `-b`는 이번 부팅 이후 로그만 본다.
+
+## rsyslog로 넘어가는 경우
+
+바이너리 저널 대신 텍스트 로그 파일이 필요하거나, 원격 로그 서버로 포워딩해야 할 때는 여전히 rsyslog가 쓰인다. `/etc/rsyslog.d/`에 규칙을 추가하면 특정 태그의 로그만 별도 파일로 뽑아낼 수 있다.
+
+```
+:programname, isequal, "myapp" /var/log/myapp.log
+& stop
+```
+
+## 저널 용량 관리
+
+`journalctl --disk-usage`로 현재 사용량을 확인하고, `/etc/systemd/journald.conf`의 `SystemMaxUse`로 상한을 걸어두지 않으면 디스크를 통째로 잡아먹는 사고가 날 수 있다.

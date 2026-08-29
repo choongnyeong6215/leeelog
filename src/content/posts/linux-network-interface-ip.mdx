@@ -1,0 +1,30 @@
+---
+title: "리눅스 네트워크 인터페이스 설정과 ip 명령어"
+description: "ifconfig 대신 ip 명령어로 인터페이스, 라우트, 방화벽을 다루는 법을 정리한다."
+pubDate: 2024-04-15
+category: "linux"
+tags: ["Linux", "Network"]
+---
+
+`ifconfig`는 여전히 익숙하지만 대부분의 배포판에서 deprecated 상태다. `ip` 명령어로 옮겨가자.
+
+## 인터페이스와 주소 확인
+
+```bash
+ip addr show
+ip link set eth0 up
+ip addr add 192.168.1.10/24 dev eth0
+```
+
+## 라우팅 테이블
+
+```bash
+ip route show
+ip route add default via 192.168.1.1
+```
+
+기본 게이트웨이가 두 개 잡혀서 이상하게 트래픽이 나가는 문제를 `ip route show`로 바로 확인한 적이 있다. 오래된 라우트가 남아있는 걸 못 찾으면 한참을 헤매게 된다.
+
+## 임시 설정 vs 영구 설정
+
+`ip` 명령으로 바꾼 값은 재부팅하면 사라진다. 영구적으로 유지하려면 배포판별 네트워크 관리 도구(netplan, NetworkManager, `/etc/network/interfaces` 등)에 반영해야 한다는 걸 잊지 말자.

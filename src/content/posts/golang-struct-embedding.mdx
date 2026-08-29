@@ -1,0 +1,46 @@
+---
+title: "Go 구조체 임베딩과 컴포지션"
+description: "상속이 없는 Go에서 구조체 임베딩으로 코드를 재사용하는 방법을 정리한다."
+pubDate: 2024-10-28
+category: "golang"
+tags: ["Golang", "Struct"]
+---
+
+Go에는 클래스 상속이 없다. 대신 구조체 임베딩으로 "has-a"를 "is-a"처럼 쓸 수 있게 해준다.
+
+## 기본 임베딩
+
+```go
+type Base struct {
+    ID string
+}
+
+func (b Base) Describe() string {
+    return "id=" + b.ID
+}
+
+type User struct {
+    Base
+    Name string
+}
+
+u := User{Base: Base{ID: "1"}, Name: "cnl"}
+u.Describe() // Base의 메서드를 그대로 호출 가능
+```
+
+`User`는 `Base`를 상속받은 게 아니라, `Base` 타입의 필드를 이름 없이 포함하고 있을 뿐이다. 그런데도 `Base`의 메서드가 승격(promotion)되어 마치 `User`의 메서드처럼 호출된다.
+
+## 상속과의 차이
+
+다형성이 필요하면 여전히 인터페이스를 써야 한다. 임베딩은 어디까지나 코드 재사용을 위한 컴포지션 도구이지, `Base` 타입 슬라이스에 `User`를 담을 수 있게 해주는 기능이 아니다.
+
+## 인터페이스 임베딩도 가능
+
+```go
+type ReadWriter interface {
+    io.Reader
+    io.Writer
+}
+```
+
+작은 인터페이스들을 조합해 더 큰 인터페이스를 만들 때도 같은 임베딩 문법을 쓴다.

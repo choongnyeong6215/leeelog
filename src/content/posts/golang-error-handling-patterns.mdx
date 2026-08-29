@@ -1,0 +1,50 @@
+---
+title: "Go 에러 핸들링 패턴 정리"
+description: "if err != nil의 반복을 넘어, Go다운 에러 처리 패턴을 정리한다."
+pubDate: 2024-07-22
+category: "golang"
+tags: ["Golang", "Error"]
+---
+
+Go의 에러 처리는 예외 대신 값으로 다룬다는 철학이 처음엔 낯설지만, 익숙해지면 오히려 흐름이 명확해진다.
+
+## 기본: 에러는 값이다
+
+```go
+f, err := os.Open("data.txt")
+if err != nil {
+    return fmt.Errorf("open data.txt: %w", err)
+}
+defer f.Close()
+```
+
+`%w`로 감싸면 원본 에러 정보를 유지한 채 컨텍스트를 덧붙일 수 있다.
+
+## errors.Is / errors.As
+
+```go
+if errors.Is(err, os.ErrNotExist) {
+    // 파일이 없는 경우만 별도 처리
+}
+
+var pathErr *fs.PathError
+if errors.As(err, &pathErr) {
+    log.Println(pathErr.Path)
+}
+```
+
+`==` 비교 대신 `errors.Is`/`errors.As`를 쓰면 래핑된 에러 체인 안에서도 원하는 에러 타입을 정확히 찾아낼 수 있다.
+
+## 커스텀 에러 타입
+
+```go
+type ValidationError struct {
+    Field string
+}
+
+func (e *ValidationError) Error() string {
+    return fmt.Sprintf("invalid field: %s", e.Field)
+}
+```
+
+호출자가 어떤 종류의 에러인지 구분해서 처리해야 한다면, 문자열 비교 대신 이렇게 타입을 정의해두는 게 안전하다.

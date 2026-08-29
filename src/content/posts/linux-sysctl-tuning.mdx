@@ -1,0 +1,32 @@
+---
+title: "리눅스 커널 파라미터 튜닝(sysctl)"
+description: "sysctl로 조정할 수 있는 대표적인 커널 파라미터와 적용 시 주의점을 정리한다."
+pubDate: 2024-05-27
+category: "linux"
+tags: ["Linux", "Kernel"]
+---
+
+트래픽이 몰리는 서버에서 커넥션이 자꾸 끊긴다면 커널 파라미터부터 의심해봐야 한다.
+
+## 자주 쓰는 파라미터
+
+```bash
+sysctl net.core.somaxconn
+sysctl net.ipv4.tcp_max_syn_backlog
+sysctl vm.swappiness
+```
+
+- `net.core.somaxconn`: accept 큐의 최대 길이. 순간 접속량이 많은 서비스에서 너무 작으면 커넥션이 드롭된다.
+- `vm.swappiness`: 메모리가 여유 있어도 스왑을 적극적으로 쓸지 결정한다. DB 서버라면 낮게 잡는 편이다.
+
+## 임시 적용과 영구 적용
+
+```bash
+sudo sysctl -w net.core.somaxconn=1024
+```
+
+이렇게 바꾼 값은 재부팅하면 초기화된다. 영구 반영하려면 `/etc/sysctl.d/99-custom.conf`에 같은 내용을 적고 `sysctl --system`으로 로드해야 한다.
+
+## 주의할 점
+
+값을 무작정 키운다고 능사가 아니다. 특히 메모리 관련 파라미터는 워크로드에 맞게 벤치마크를 해보고 조금씩 조정하는 게 안전하다.

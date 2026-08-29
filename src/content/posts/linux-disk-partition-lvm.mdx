@@ -1,0 +1,32 @@
+---
+title: "리눅스 디스크 파티션과 LVM 기초"
+description: "fdisk로 파티션을 나누고 LVM으로 유연하게 볼륨을 관리하는 흐름을 정리한다."
+pubDate: 2024-05-13
+category: "linux"
+tags: ["Linux", "Storage"]
+---
+
+디스크를 추가할 때마다 파티션 크기를 잘못 잡아 나중에 후회하지 않으려면 LVM을 알아두는 게 좋다.
+
+## 기본 파티셔닝
+
+```bash
+sudo fdisk /dev/sdb
+sudo mkfs.ext4 /dev/sdb1
+sudo mount /dev/sdb1 /data
+```
+
+## LVM으로 유연하게
+
+LVM은 물리 볼륨(PV) → 볼륨 그룹(VG) → 논리 볼륨(LV) 3단계 구조다.
+
+```bash
+sudo pvcreate /dev/sdb1
+sudo vgcreate data_vg /dev/sdb1
+sudo lvcreate -L 50G -n data_lv data_vg
+sudo mkfs.ext4 /dev/data_vg/data_lv
+```
+
+## 용량이 부족해지면
+
+디스크를 새로 붙이고 `vgextend`로 볼륨 그룹에 추가한 다음 `lvextend`와 `resize2fs`(또는 xfs는 `xfs_growfs`)로 논리 볼륨과 파일시스템을 함께 늘리면, 서비스 중단 없이 용량을 확장할 수 있다. 처음 이 흐름을 알기 전에는 디스크가 꽉 찰 때마다 마이그레이션을 걱정했었다.

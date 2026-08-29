@@ -1,0 +1,43 @@
+---
+title: "Go 프로파일링(pprof)으로 성능 분석하기"
+description: "net/http/pprof로 CPU/메모리 프로파일을 뜨고 병목을 찾는 흐름을 정리한다."
+pubDate: 2024-11-25
+category: "golang"
+tags: ["Golang", "Profiling"]
+---
+
+"어디가 느린지 모르겠다"는 느낌만으로 코드를 고치기 시작하면 대부분 헛수고로 끝난다. pprof로 먼저 측정하자.
+
+## pprof 엔드포인트 붙이기
+
+```go
+import (
+    "net/http"
+    _ "net/http/pprof"
+)
+
+func main() {
+    go http.ListenAndServe("localhost:6060", nil)
+    // ... 본 서버 로직
+}
+```
+
+## CPU 프로파일 뜨기
+
+```bash
+go tool pprof http://localhost:6060/debug/pprof/profile?seconds=30
+```
+
+30초간 CPU 사용을 샘플링한 뒤, `top`으로 가장 시간을 많이 쓴 함수를, `web`으로 콜그래프를 시각화해서 볼 수 있다.
+
+## 메모리 프로파일
+
+```bash
+go tool pprof http://localhost:6060/debug/pprof/heap
+```
+
+할당량이 많은 함수를 `top -cum`으로 확인하면, 예상치 못한 곳에서 슬라이스를 반복 할당하고 있는 걸 발견할 때가 많다.
+
+## 벤치마크와 함께
+
+`go test -bench=. -cpuprofile=cpu.out`으로 특정 함수 단위 벤치마크에서도 같은 방식으로 프로파일을 뜰 수 있다. 프로덕션 트래픽까지 안 가도 병목의 8할은 여기서 잡힌다.

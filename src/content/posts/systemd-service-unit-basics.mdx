@@ -1,0 +1,40 @@
+---
+title: "systemd 서비스 유닛 파일 작성법"
+description: "내가 만든 프로그램을 systemd 서비스로 등록하는 방법을 단계별로 정리한다."
+pubDate: 2024-03-18
+category: "linux"
+tags: ["Linux", "systemd"]
+---
+
+데몬을 `nohup ... &`로 띄우던 시절을 지나, 이제는 systemd 유닛으로 관리하는 게 표준이다.
+
+## 최소 유닛 파일
+
+```ini
+# /etc/systemd/system/myapp.service
+[Unit]
+Description=My App
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/myapp
+Restart=on-failure
+User=myapp
+
+[Install]
+WantedBy=multi-user.target
+```
+
+## 등록과 제어
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable --now myapp
+sudo systemctl status myapp
+```
+
+`daemon-reload`를 빼먹으면 유닛 파일을 고쳐도 반영되지 않는다는 걸 몇 번 삽질하고 나서야 몸에 익었다.
+
+## Restart 정책
+
+`Restart=on-failure`는 정상 종료(exit 0)에는 재시작하지 않는다. 항상 살려두고 싶다면 `Restart=always`를, 재시작 폭주를 막고 싶다면 `StartLimitIntervalSec`/`StartLimitBurst`를 같이 설정해두는 게 안전하다.

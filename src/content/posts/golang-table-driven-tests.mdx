@@ -1,0 +1,49 @@
+---
+title: "Go 테스트 작성법과 테이블 기반 테스트"
+description: "Go 표준 testing 패키지와 테이블 기반 테스트 패턴을 정리한다."
+pubDate: 2024-09-16
+category: "golang"
+tags: ["Golang", "Test"]
+---
+
+Go는 테스트 프레임워크 없이도 표준 라이브러리만으로 충분히 테스트를 짤 수 있다.
+
+## 기본 테스트
+
+```go
+func TestAdd(t *testing.T) {
+    got := Add(2, 3)
+    want := 5
+    if got != want {
+        t.Errorf("Add(2, 3) = %d, want %d", got, want)
+    }
+}
+```
+
+## 테이블 기반 테스트
+
+케이스가 여러 개일 때는 슬라이스에 입력/기대값을 모아두고 반복하는 패턴이 표준처럼 쓰인다.
+
+```go
+func TestAdd(t *testing.T) {
+    cases := []struct {
+        name     string
+        a, b     int
+        want     int
+    }{
+        {"positive", 2, 3, 5},
+        {"negative", -1, -1, -2},
+        {"zero", 0, 0, 0},
+    }
+
+    for _, tc := range cases {
+        t.Run(tc.name, func(t *testing.T) {
+            if got := Add(tc.a, tc.b); got != tc.want {
+                t.Errorf("got %d, want %d", got, tc.want)
+            }
+        })
+    }
+}
+```
+
+`t.Run`으로 서브테스트를 나누면 실패한 케이스만 이름으로 콕 집어 재실행(`go test -run TestAdd/negative`)할 수 있어서 디버깅이 훨씬 편하다.

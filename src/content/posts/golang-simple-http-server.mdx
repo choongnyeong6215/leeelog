@@ -1,0 +1,50 @@
+---
+title: "Go로 만드는 간단한 HTTP 서버"
+description: "외부 프레임워크 없이 net/http만으로 최소한의 HTTP 서버를 띄워본다."
+pubDate: 2024-09-30
+category: "golang"
+tags: ["Golang", "Backend"]
+---
+
+Go는 표준 라이브러리만으로도 프로덕션에서 쓸 만한 HTTP 서버를 만들 수 있다는 게 매력이다.
+
+## 최소 서버
+
+```go
+package main
+
+import (
+    "log"
+    "net/http"
+)
+
+func main() {
+    mux := http.NewServeMux()
+    mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+        w.WriteHeader(http.StatusOK)
+        w.Write([]byte("ok"))
+    })
+
+    srv := &http.Server{
+        Addr:         ":8080",
+        Handler:      mux,
+        ReadTimeout:  5 * time.Second,
+        WriteTimeout: 10 * time.Second,
+    }
+    log.Fatal(srv.ListenAndServe())
+}
+```
+
+## 타임아웃을 꼭 설정해야 하는 이유
+
+`http.ListenAndServe`를 기본값으로 바로 쓰면 `ReadTimeout`/`WriteTimeout`이 없어서, 느린 클라이언트가 커넥션을 오래 붙잡고 있으면 서버 리소스가 서서히 고갈될 수 있다. `http.Server` 구조체를 직접 만들어 타임아웃을 명시하는 걸 습관으로 들이는 게 좋다.
+
+## graceful shutdown
+
+```go
+ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+defer cancel()
+srv.Shutdown(ctx)
+```
+
+`SIGTERM`을 받으면 새 요청은 거부하고 처리 중인 요청만 마무리한 뒤 종료하도록, `Shutdown`을 시그널 핸들러와 함께 구성해두는 게 안전하다.
