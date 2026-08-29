@@ -2,7 +2,7 @@
 
 export const SITE = {
   // 브라우저 탭 타이틀 접미사 등에도 사용됨
-  title: 'cnl.dev',
+  title: 'cnl:~$',
   description:
     '시스템 엔지니어를 지향하며 리눅스 운영, 네트워크, 컨테이너, 클라우드를 공부하고 기록하는 블로그입니다.',
 } as const;
