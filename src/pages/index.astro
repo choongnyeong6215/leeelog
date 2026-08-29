@@ -1,45 +1,64 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import PostCard from '../components/PostCard.astro';
-import { getAllPosts, getPopularPosts, getRecentPosts } from '../lib/posts';
+import PostListItem from '../components/PostListItem.astro';
+import { getAllPosts } from '../lib/posts';
 import { SITE } from '../config';
 
 const posts = await getAllPosts();
-const popularPosts = getPopularPosts(posts, 3);
-const recentPosts = getRecentPosts(posts, 9);
 ---
 
 <BaseLayout title={SITE.title} description={SITE.description}>
-  <section class="mb-14">
-    <h2 class="mb-5 text-xl font-bold text-text">📈 인기 글</h2>
-    {
-      popularPosts.length > 0 ? (
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {popularPosts.map((post) => (
-            <PostCard post={post} />
-          ))}
-        </div>
-      ) : (
-        <p class="text-sm text-text-faint">아직 작성된 글이 없습니다.</p>
-      )
-    }
-  </section>
-
   <section>
-    <div class="mb-5 flex items-center justify-between">
-      <h2 class="text-xl font-bold text-text">📄 최근 포스트</h2>
-      <a href="/blog" class="text-sm font-medium text-accent hover:underline">전체 보기 →</a>
-    </div>
+    <h2 class="mb-5 text-xl font-bold text-text">📄 최근 포스트</h2>
     {
-      recentPosts.length > 0 ? (
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {recentPosts.map((post) => (
-            <PostCard post={post} />
-          ))}
-        </div>
+      posts.length > 0 ? (
+        <>
+          <div id="recent-post-list" class="flex flex-col gap-4">
+            {posts.map((post) => (
+              <div data-post-item>
+                <PostListItem post={post} />
+              </div>
+            ))}
+          </div>
+          <div id="recent-post-sentinel" class="h-1"></div>
+        </>
       ) : (
         <p class="text-sm text-text-faint">아직 작성된 글이 없습니다.</p>
       )
     }
   </section>
 </BaseLayout>
+
+<script>
+  const PAGE_SIZE = 10;
+  const items = Array.from(document.querySelectorAll<HTMLElement>('[data-post-item]'));
+  const sentinel = document.getElementById('recent-post-sentinel');
+  let visibleCount = 0;
+  let observer: IntersectionObserver | null = null;
+
+  function revealMore() {
+    if (visibleCount >= items.length) return;
+    const next = Math.min(visibleCount + PAGE_SIZE, items.length);
+    for (let i = visibleCount; i < next; i++) {
+      items[i].classList.remove('hidden');
+    }
+    visibleCount = next;
+    if (visibleCount >= items.length) {
+      observer?.disconnect();
+      sentinel?.classList.add('hidden');
+    }
+  }
+
+  items.forEach((item) => item.classList.add('hidden'));
+  revealMore();
+
+  if (sentinel && items.length > PAGE_SIZE) {
+    observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) revealMore();
+      },
+      { rootMargin: '400px' },
+    );
+    observer.observe(sentinel);
+  }
+</script>

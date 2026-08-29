@@ -16,23 +16,6 @@ export function getPostUrl(post: Post): string {
   return `/${post.data.category}/${post.id}`;
 }
 
-/**
- * 인기 글: 조회수(views) 기준, 없으면 pinned 여부로 대체.
- * TODO: 추후 실제 애널리틱스(조회수) 연동 지점 — 현재는 frontmatter views/pinned로 임시 대체.
- */
-export function getPopularPosts(posts: Post[], limit = 3): Post[] {
-  const scored = posts.map((post) => ({
-    post,
-    score: (post.data.views ?? 0) + (post.data.pinned ? 1_000_000 : 0),
-  }));
-  scored.sort((a, b) => b.score - a.score || b.post.data.pubDate.valueOf() - a.post.data.pubDate.valueOf());
-  return scored.slice(0, limit).map((s) => s.post);
-}
-
-export function getRecentPosts(posts: Post[], limit = 6): Post[] {
-  return posts.slice(0, limit);
-}
-
 export function getPostsByCategory(posts: Post[], categorySlug: string): Post[] {
   return posts.filter((post) => post.data.category === categorySlug);
 }

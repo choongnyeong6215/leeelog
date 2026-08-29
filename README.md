@@ -24,7 +24,7 @@ src/
 
 | 경로 | 파일 |
 | --- | --- |
-| `/` | `src/pages/index.astro` — 인기글 3개 + 최근 포스트 |
+| `/` | `src/pages/index.astro` — 최근 포스트 목록, 무한 스크롤(클라이언트 사이드 페이지네이션) |
 | `/blog` | `src/pages/blog/index.astro` — 전체 글, 카테고리/태그 클라이언트 필터 + 더보기 |
 | `/series`, `/series/<이름>` | `src/pages/series/` |
 | `/tags`, `/tags/<태그>` | `src/pages/tags/` |
@@ -88,6 +88,7 @@ import Callout from '../../components/Callout.astro';
 - [ ] SEO (메타태그, `sitemap.xml`, RSS, OG 이미지)
 - [ ] 테마 색상 재구성
 - [ ] dev 서버에서 글 본문 수정 시 읽기 시간 배지(`PostCard`의 `{minutes}분`)가 갱신되지 않는 문제 수정 — `src/lib/posts.ts`의 `getAllPosts()` 모듈 레벨 캐시(`cachedPosts`)가 dev 모드 콘텐츠 변경을 반영하지 못하는 게 원인으로 추정됨
+- [ ] frontmatter에 "소제목(subtitle)" 필드 별도 추가 검토 — 현재 홈 목록(`PostListItem`)은 `description`을 소제목처럼 재사용 중인데, `description`은 SEO `<meta name="description">`으로도 쓰이고 있어 화면 노출용 문구와 목적이 겹침. 분리하면 글쓰기 시 소제목 칸이 따로 생김
 
 > 완료: `SITE`/`PROFILE`/`SOCIAL_LINKS`(GitHub, Email) 및 아바타 이미지(`public/avatar.jpg`) 반영 완료.
 
@@ -128,4 +129,4 @@ import Callout from '../../components/Callout.astro';
 
 ## 범위 밖
 
-이번 초기 구축에서는 SEO 메타태그, `sitemap.xml`, RSS, OG 이미지, 실제 조회수 애널리틱스 연동은 의도적으로 제외했습니다(요구사항 범위 밖). 인기 글 노출은 frontmatter의 `views`/`pinned`로 임시 대체되어 있습니다 — 관련 지점은 `src/lib/posts.ts`의 `getPopularPosts` 주석을 참고하세요.
+이번 초기 구축에서는 SEO 메타태그, `sitemap.xml`, RSS, OG 이미지, 실제 조회수 애널리틱스 연동은 의도적으로 제외했습니다(요구사항 범위 밖). 인기 글 섹션은 홈페이지에서 제거되어 현재 별도로 노출되지 않습니다 — `content.config.ts`의 `views`/`pinned` 스키마 필드는 이후 다시 쓸 수 있도록 남겨두었지만 현재 코드에서 참조하는 곳은 없습니다.
