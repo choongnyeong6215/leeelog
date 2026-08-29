@@ -2,16 +2,15 @@
 
 export const SITE = {
   // 브라우저 탭 타이틀 접미사 등에도 사용됨
-  title: '개발하는 리록', // TODO: 사이트 타이틀
+  title: 'cnl.dev',
   description:
-    '리눅스 운영, 네트워크, 컨테이너, 클라우드를 공부하며 기록하는 개인 기술 블로그입니다.', // TODO: 사이트 설명
+    '시스템 엔지니어를 지향하며 리눅스 운영, 네트워크, 컨테이너, 클라우드를 공부하고 기록하는 블로그입니다.',
 } as const;
 
 export const PROFILE = {
-  nickname: '리록', // TODO: 닉네임
+  nickname: 'cnl',
   // public/ 아래에 실제 아바타 이미지를 넣고 경로를 교체하세요. (예: '/avatar.png')
   avatar: '/avatar.jpg',
-  statusBadge: 'GLHF', // TODO: 프로필 카드에 표시할 짧은 상태 문구 (선택)
 } as const;
 
 export type SocialLink = {
