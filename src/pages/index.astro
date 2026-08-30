@@ -1,7 +1,6 @@
 ---
 import { Icon } from 'astro-icon/components';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import BlogIntro from '../components/BlogIntro.astro';
 import PostListItem from '../components/PostListItem.astro';
 import { getAllPosts } from '../lib/posts';
 import { SITE } from '../config';
@@ -10,34 +9,31 @@ const posts = await getAllPosts();
 ---
 
 <BaseLayout title={SITE.title} description={SITE.description}>
-  <div class="mx-auto max-w-2xl">
-    <BlogIntro postCount={posts.length} />
-    {
-      posts.length > 0 ? (
-        <>
-          <div id="recent-post-list" class="flex flex-col gap-4">
-            {posts.map((post) => (
-              <div data-post-item>
-                <PostListItem post={post} />
-              </div>
-            ))}
-          </div>
-          <div class="mt-8 flex justify-center">
-            <button
-              id="load-more"
-              type="button"
-              class="hidden inline-flex items-center gap-1.5 text-sm text-text-muted transition-colors hover:text-text"
-            >
-              더 보기
-              <Icon name="lucide:arrow-down" class="h-4 w-4" />
-            </button>
-          </div>
-        </>
-      ) : (
-        <p class="text-center text-sm text-text-faint">아직 작성된 글이 없습니다.</p>
-      )
-    }
-  </div>
+  {
+    posts.length > 0 ? (
+      <>
+        <div id="recent-post-list" class="flex flex-col gap-4">
+          {posts.map((post) => (
+            <div data-post-item>
+              <PostListItem post={post} />
+            </div>
+          ))}
+        </div>
+        <div class="mt-8 flex justify-center">
+          <button
+            id="load-more"
+            type="button"
+            class="hidden inline-flex items-center gap-1.5 text-sm text-text-muted transition-colors hover:text-text"
+          >
+            더 보기
+            <Icon name="lucide:arrow-down" class="h-4 w-4" />
+          </button>
+        </div>
+      </>
+    ) : (
+      <p class="text-sm text-text-faint">아직 작성된 글이 없습니다.</p>
+    )
+  }
 </BaseLayout>
 
 <script>

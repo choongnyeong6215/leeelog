@@ -1,7 +1,6 @@
 ---
 import { getPostUrl, type Post } from '../lib/posts';
 import { formatDateLong } from '../lib/dates';
-import { estimateReadingMinutes } from '../lib/readingTime';
 
 interface Props {
   post: Post;
@@ -9,7 +8,6 @@ interface Props {
 
 const { post } = Astro.props;
 const url = getPostUrl(post);
-const minutes = estimateReadingMinutes(post.body ?? '');
 ---
 
 <a
@@ -24,7 +22,5 @@ const minutes = estimateReadingMinutes(post.body ?? '');
       <p class="mt-2 line-clamp-2 text-sm text-text-muted">{post.data.description}</p>
     )
   }
-  <p class="mt-4 text-xs text-text-faint">
-    {formatDateLong(post.data.pubDate)} · {minutes}분 읽기
-  </p>
+  <p class="mt-4 text-xs text-text-faint">{formatDateLong(post.data.pubDate)}</p>
 </a>
