@@ -34,7 +34,7 @@ const pageLinkClass = (active: boolean) =>
     // 이전/다음 유무와 무관하게 페이지 번호 묶음이 항상 중앙(가운데 열)에 오도록 3열 그리드로 구성.
     // 가운데 "auto" 열이 번호 묶음의 실제 너비를 갖고, 양옆 "1fr" 열이 남는 공간을 동일하게 나눠 가지므로
     // 한쪽 버튼이 없어도(빈 열이어도) 중앙 정렬이 깨지지 않는다.
-    <nav aria-label="페이지 네비게이션" class="mt-8 grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+    <nav aria-label="페이지 네비게이션" class="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
       <div class="flex justify-start">
         {prevHref && (
           <a href={prevHref} class={navLinkClass}>

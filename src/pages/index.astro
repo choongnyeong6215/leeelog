@@ -16,13 +16,17 @@ const pagePosts = posts.slice(0, POSTS_PAGE_SIZE);
     <h2 class="mb-5 text-xl font-bold text-text">최근 포스트</h2>
     {
       posts.length > 0 ? (
-        <>
-          <PostList posts={pagePosts} />
-          <Pagination currentPage={1} totalPages={totalPages} />
-        </>
+        <PostList posts={pagePosts} />
       ) : (
         <p class="text-sm text-text-faint">아직 작성된 글이 없습니다.</p>
       )
     }
   </section>
+  {
+    posts.length > 0 && (
+      <Fragment slot="pagination">
+        <Pagination currentPage={1} totalPages={totalPages} />
+      </Fragment>
+    )
+  }
 </BaseLayout>

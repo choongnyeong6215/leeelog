@@ -22,6 +22,7 @@ interface Props {
 const { title, description = SITE.description, headings } = Astro.props;
 const pageTitle = title === SITE.title ? title : `${title} | ${SITE.title}`;
 const hasToc = Boolean(headings?.some((h) => h.depth === 2 || h.depth === 3));
+const hasPagination = Astro.slots.has('pagination');
 ---
 
 <html lang="ko">
@@ -63,6 +64,13 @@ const hasToc = Boolean(headings?.some((h) => h.depth === 2 || h.depth === 3));
         </div>
       )}
     </div>
+    {
+      hasPagination && (
+        <div class="mx-auto w-full max-w-7xl px-4 pb-8">
+          <slot name="pagination" />
+        </div>
+      )
+    }
     <Footer />
     <BackToTop />
   </body>

@@ -30,6 +30,8 @@ const pagePosts = posts.slice((page - 1) * POSTS_PAGE_SIZE, page * POSTS_PAGE_SI
   <section>
     <h2 class="mb-5 text-xl font-bold text-text">최근 포스트</h2>
     <PostList posts={pagePosts} />
-    <Pagination currentPage={page} totalPages={totalPages} />
   </section>
+  <Fragment slot="pagination">
+    <Pagination currentPage={page} totalPages={totalPages} />
+  </Fragment>
 </BaseLayout>
