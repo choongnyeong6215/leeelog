@@ -1,7 +1,6 @@
 ---
 import '../styles/global.css';
 import Header from '../components/Header.astro';
-import Sidebar from '../components/Sidebar.astro';
 import TOC from '../components/TOC.astro';
 import Footer from '../components/Footer.astro';
 import BackToTop from '../components/BackToTop.astro';
@@ -22,7 +21,6 @@ interface Props {
 const { title, description = SITE.description, headings } = Astro.props;
 const pageTitle = title === SITE.title ? title : `${title} | ${SITE.title}`;
 const hasToc = Boolean(headings?.some((h) => h.depth === 2 || h.depth === 3));
-const hasPagination = Astro.slots.has('pagination');
 ---
 
 <html lang="ko">
@@ -49,28 +47,14 @@ const hasPagination = Astro.slots.has('pagination');
     <div
       class:list={[
         'mx-auto grid w-full max-w-7xl flex-1 grid-cols-1 gap-8 px-4 py-8 lg:gap-10',
-        hasToc ? 'lg:grid-cols-[260px_minmax(0,1fr)_240px]' : 'lg:grid-cols-[260px_minmax(0,1fr)]',
+        hasToc && 'lg:grid-cols-[minmax(0,1fr)_240px]',
       ]}
     >
-      <div class="order-2 lg:order-1">
-        <Sidebar />
-      </div>
-      <main class="order-1 min-w-0 lg:order-2">
+      <main class="min-w-0">
         <slot />
       </main>
-      {hasToc && (
-        <div class="order-3">
-          <TOC headings={headings ?? []} />
-        </div>
-      )}
+      {hasToc && <TOC headings={headings ?? []} />}
     </div>
-    {
-      hasPagination && (
-        <div class="mx-auto w-full max-w-7xl px-4 pb-8">
-          <slot name="pagination" />
-        </div>
-      )
-    }
     <Footer />
     <BackToTop />
   </body>

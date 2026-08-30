@@ -13,9 +13,9 @@ src/
 ├── content.config.ts      # posts 컬렉션 Zod 스키마
 ├── content/posts/*.mdx    # 실제 글
 ├── layouts/
-│   ├── BaseLayout.astro   # 헤더 + 좌측 사이드바 + (있으면) 우측 TOC + 푸터 뼈대
+│   ├── BaseLayout.astro   # 헤더 + (있으면) 우측 TOC + 푸터 뼈대 (사이드바 없음)
 │   └── PostLayout.astro   # 글 상세 전용 레이아웃(메타/배지/시리즈/관련글/댓글)
-├── components/            # Header, Sidebar, PostCard, Badge, Callout, SeriesWidget, Giscus 등
+├── components/            # Header, PostCard, PostListItem, Badge, Callout, SeriesWidget, Giscus 등
 ├── lib/                   # posts/categories/dates/readingTime/search 등 콘텐츠 집계 유틸
 └── pages/                 # 라우팅 (아래 참고)
 ```
@@ -24,7 +24,7 @@ src/
 
 | 경로 | 파일 |
 | --- | --- |
-| `/`, `/page/<n>` | `src/pages/index.astro`, `src/pages/page/[page].astro` — 최근 포스트 목록, 페이지당 10개(`src/lib/pagination.ts`)씩 정적 페이지네이션 |
+| `/` | `src/pages/index.astro` — 전체 글 목록, 무한 스크롤(10개씩 클라이언트 사이드 배치 로딩) |
 | `/blog` | `src/pages/blog/index.astro` — 전체 글, 카테고리/태그 클라이언트 필터 + 더보기 |
 | `/series`, `/series/<이름>` | `src/pages/series/` |
 | `/tags`, `/tags/<태그>` | `src/pages/tags/` |
@@ -82,14 +82,15 @@ import Callout from '../../components/Callout.astro';
 
 ## TODO
 
+- [ ] **로고/사이트 타이틀 확정** — `src/config.ts`의 `SITE.title`이 현재 `'블로그 이름 (테스트)'` placeholder임. 참고하기로 한 별도 문서/기획 확정되면 실제 문구로 교체
 - [ ] `SITE_URL` 실제 도메인 반영 (`astro.config.mjs`) — 프로젝트 사이트(`leeelog`)로 배포한다면 `base: '/leeelog'`도 주석 해제 필요
 - [ ] Giscus 연동 (Discussions 카테고리 확정 → [giscus.app](https://giscus.app)에서 값 발급 → `src/config.ts`의 `GISCUS_CONFIG` 채우기)
-- [x] 반응형 스타일링 1차 (모바일에서 Sidebar/TOC가 본문보다 먼저 나오던 순서 수정, 표 가로 스크롤 처리) — 세부 컴포넌트별 점검은 계속 필요할 수 있음
+- [x] 반응형 스타일링 1차 (모바일에서 본문이 다른 요소보다 먼저 나오도록 순서 수정, 표 가로 스크롤 처리) — 세부 컴포넌트별 점검은 계속 필요할 수 있음
 - [ ] SEO (메타태그, `sitemap.xml`, RSS, OG 이미지)
 - [ ] 테마 색상 재구성
 - [ ] dev 서버에서 글 본문 수정 시 읽기 시간 배지(`PostCard`의 `{minutes}분`)가 갱신되지 않는 문제 수정 — `src/lib/posts.ts`의 `getAllPosts()` 모듈 레벨 캐시(`cachedPosts`)가 dev 모드 콘텐츠 변경을 반영하지 못하는 게 원인으로 추정됨
 
-> 완료: `SITE`/`PROFILE`/`SOCIAL_LINKS`(GitHub, Email) 및 아바타 이미지(`public/avatar.jpg`) 반영 완료.
+> 완료: `SITE`/`PROFILE`/`SOCIAL_LINKS`(GitHub, Email) 및 아바타 이미지(`public/avatar.jpg`) 반영 완료. 좌측 사이드바(프로필 카드·카테고리 트리)는 제거했고, 프로필/카테고리 정보는 `/about` 페이지로 이전할 예정.
 
 ### 콘텐츠 관리 방식 (MDX vs DB)
 
