@@ -116,13 +116,13 @@ import Callout from '../../components/Callout.astro';
 
 ## GitHub Pages 배포 (GitHub Actions)
 
-`.github/workflows/deploy.yml`에 `main` 브랜치 push 시 자동 빌드·배포하는 워크플로우가 이미 포함되어 있습니다 (공식 [`withastro/action`](https://github.com/withastro/action) 사용).
+`.github/workflows/deploy.yml`에 빌드·배포 워크플로우가 포함되어 있습니다 (공식 [`withastro/action`](https://github.com/withastro/action) 사용). **현재는 `workflow_dispatch`(수동 실행)만 트리거로 걸려 있어 push해도 자동으로 돌지 않습니다** — 저장소에서 아직 Pages를 설정하지 않아 자동 배포가 계속 실패했기 때문에 의도적으로 꺼둔 상태입니다. 도메인을 연결할 준비가 되면:
 
 1. GitHub 저장소 **Settings → Pages → Build and deployment → Source**를 **GitHub Actions**로 설정합니다.
 2. `astro.config.mjs`의 `SITE_URL`(및 필요 시 `base`)을 실제 배포 도메인에 맞게 수정합니다.
    - `<username>.github.io` 유저 사이트: `base` 불필요.
    - `<username>.github.io/<repo>` 프로젝트 사이트: `base: '/<repo>'` 주석을 해제하세요.
-3. `main` 브랜치에 push하면 Actions 탭에서 빌드/배포가 진행됩니다.
+3. `deploy.yml`의 `on:`에 `push: branches: [main]`을 다시 추가해 push마다 자동 배포되게 하거나, Actions 탭에서 `workflow_dispatch`로 수동 실행합니다.
 
 > 참고: 코드 안의 페이지 내비게이션 링크(`/series`, `/about` 등)는 절대 경로 문자열로 작성되어 있습니다. 프로젝트 사이트로 배포해 `base`를 설정하는 경우, 별도 헬퍼 없이 하드코딩된 절대 경로를 그대로 쓰면 `base` 프리픽스가 붙지 않으니 주의하세요(유저 사이트 배포라면 문제없습니다).
 
