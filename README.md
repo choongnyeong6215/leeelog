@@ -15,22 +15,22 @@ src/
 ├── layouts/
 │   ├── BaseLayout.astro   # 헤더 + (있으면) 우측 TOC + 푸터 뼈대 (사이드바 없음)
 │   └── PostLayout.astro   # 글 상세 전용 레이아웃(메타/배지/시리즈/관련글/댓글)
-├── components/            # Header, PostCard, PostListItem, Badge, Callout, SeriesWidget, Giscus 등
-├── lib/                   # posts/categories/dates/readingTime/search 등 콘텐츠 집계 유틸
+├── components/            # Header, PostListItem, Badge, Callout, SeriesWidget, TOC, Giscus 등
+├── lib/                   # posts/dates/search/techStack 등 콘텐츠 집계 유틸
 └── pages/                 # 라우팅 (아래 참고)
 ```
+
+내비게이션은 헤더 로고(홈) + `Series` + `About` + 검색(⌘K)만 남겨 최대한 단순화했습니다. 카테고리·태그별로 글을 훑어보는 전용 페이지(`/blog`, `/tags`)는 없고, 태그는 검색 모달 안의 필터 칩으로만 씁니다.
 
 ### 라우팅
 
 | 경로 | 파일 |
 | --- | --- |
-| `/` | `src/pages/index.astro` — 전체 글 목록, 무한 스크롤(10개씩 클라이언트 사이드 배치 로딩) |
-| `/blog` | `src/pages/blog/index.astro` — 전체 글, 카테고리/태그 클라이언트 필터 + 더보기 |
+| `/` | `src/pages/index.astro` — 전체 글 목록, "더 보기" 클릭으로 10개씩 배치 로딩 |
 | `/series`, `/series/<이름>` | `src/pages/series/` |
-| `/tags`, `/tags/<태그>` | `src/pages/tags/` |
 | `/about` | `src/pages/about.astro` |
-| `/<category>/<slug>` | `src/pages/[category]/[slug].astro` — 글 상세 (frontmatter의 `category`가 URL 세그먼트) |
-| `/search-index.json` | `src/pages/search-index.json.ts` — ⌘K 검색용 정적 인덱스 |
+| `/<category>/<slug>` | `src/pages/[category]/[slug].astro` — 글 상세 (frontmatter의 `category`가 URL 세그먼트일 뿐, 카테고리 전용 목록 페이지는 없음) |
+| `/search-index.json` | `src/pages/search-index.json.ts` — ⌘K 검색(제목/설명/태그) + 태그 필터용 정적 인덱스 |
 
 ## 로컬 실행
 
@@ -56,14 +56,14 @@ npx astro check        # 타입 검사
 title: "글 제목"
 description: "카드/메타에 노출되는 한 줄 요약"
 pubDate: 2024-03-01
-updatedDate: 2024-03-05        # 생략 가능. pubDate와 다르면 "(수정: ...)" 표기
+updatedDate: 2024-03-05        # 생략 가능. 있으면 글 상세에 pubDate 대신 이 날짜만 표시됨
 category: "linux"               # src/config.ts의 CATEGORY_TREE에 정의된 slug 중 하나
 tags: ["Linux", "Systemd"]
 series: "시리즈 이름"            # 선택. 여러 글이 같은 값을 쓰면 자동으로 묶임
 seriesOrder: 1                   # 시리즈 내 정렬 순서(선택)
 draft: false                     # true면 프로덕션 빌드에서 제외 (dev에서는 계속 보임)
-pinned: false                    # 홈 "인기 글" 노출 후보로 우선 반영
-views: 0                         # 추후 애널리틱스 연동 전까지 임시 조회수 값(선택)
+pinned: false                    # 현재 코드에서는 미사용. 추후 정렬/추천 기능용으로 필드만 유지
+views: 0                         # 현재 코드에서는 미사용(선택)
 ---
 
 ## 첫 번째 섹션
@@ -89,7 +89,7 @@ import Callout from '../../components/Callout.astro';
 - [ ] 테마 색상 재구성
 - [ ] dev 서버에서 글 본문 수정 시 읽기 시간 배지(`PostCard`의 `{minutes}분`)가 갱신되지 않는 문제 수정 — `src/lib/posts.ts`의 `getAllPosts()` 모듈 레벨 캐시(`cachedPosts`)가 dev 모드 콘텐츠 변경을 반영하지 못하는 게 원인으로 추정됨
 
-> 완료: `SITE`/`PROFILE`/`SOCIAL_LINKS`(GitHub, Email) 및 아바타 이미지(`public/avatar.jpg`) 반영 완료. 좌측 사이드바(프로필 카드·카테고리 트리)는 제거했고, 프로필/카테고리 정보는 `/about` 페이지로 이전할 예정.
+> 완료: `SITE`/`PROFILE`/`SOCIAL_LINKS`(GitHub, Email) 및 아바타 이미지(`public/avatar.jpg`) 반영 완료. 좌측 사이드바(프로필 카드·카테고리 트리)는 제거했고, 프로필/카테고리 정보는 `/about` 페이지로 이전 완료. 내비게이션을 로고(홈)+Series+About+검색만 남기도록 단순화하고 `/blog`, `/tags` 페이지는 삭제, 태그는 검색 모달 필터로만 사용하도록 변경 완료.
 
 ### 콘텐츠 관리 방식 (MDX vs DB)
 
@@ -124,7 +124,7 @@ import Callout from '../../components/Callout.astro';
    - `<username>.github.io/<repo>` 프로젝트 사이트: `base: '/<repo>'` 주석을 해제하세요.
 3. `main` 브랜치에 push하면 Actions 탭에서 빌드/배포가 진행됩니다.
 
-> 참고: 코드 안의 페이지 내비게이션 링크(`/blog`, `/about` 등)는 절대 경로 문자열로 작성되어 있습니다. 프로젝트 사이트로 배포해 `base`를 설정하는 경우, 별도 헬퍼 없이 하드코딩된 절대 경로를 그대로 쓰면 `base` 프리픽스가 붙지 않으니 주의하세요(유저 사이트 배포라면 문제없습니다).
+> 참고: 코드 안의 페이지 내비게이션 링크(`/series`, `/about` 등)는 절대 경로 문자열로 작성되어 있습니다. 프로젝트 사이트로 배포해 `base`를 설정하는 경우, 별도 헬퍼 없이 하드코딩된 절대 경로를 그대로 쓰면 `base` 프리픽스가 붙지 않으니 주의하세요(유저 사이트 배포라면 문제없습니다).
 
 ## 범위 밖
 

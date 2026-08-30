@@ -28,11 +28,9 @@ export const SOCIAL_LINKS: SocialLink[] = [
 
 export type NavLink = { label: string; href: string };
 
+// 홈은 별도 탭 없이 헤더 로고 클릭으로 이동. 글 검색은 검색(⌘K)으로만.
 export const NAV_LINKS: NavLink[] = [
-  { label: 'Home', href: '/' },
-  { label: 'Blog', href: '/blog' },
   { label: 'Series', href: '/series' },
-  { label: 'Tags', href: '/tags' },
   { label: 'About', href: '/about' },
 ];
 

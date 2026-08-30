@@ -13,34 +13,49 @@ const items = headings.filter((h) => h.depth === 2 || h.depth === 3);
 
 {
   items.length > 0 && (
-    <nav
-      aria-label="목차"
-      class="lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:self-start lg:overflow-y-auto"
-    >
-      <p class="mb-3 text-xs font-bold tracking-wide text-text-muted">목차</p>
-      <ul class="space-y-0.5 border-l border-border text-sm">
+    <div class="group relative lg:sticky lg:top-20 lg:self-start">
+      <div
+        aria-hidden="true"
+        class="hidden lg:flex lg:flex-col lg:gap-1.5 lg:py-1 lg:transition-opacity lg:group-hover:opacity-0 lg:group-focus-within:opacity-0"
+      >
         {items.map((h) => (
-          <li>
-            <a
-              href={`#${h.slug}`}
-              data-toc-link
-              data-target={h.slug}
-              class:list={[
-                '-ml-px block border-l-2 border-transparent py-1 pl-3 text-text-muted transition-colors hover:text-text',
-                h.depth === 3 && 'pl-6 text-[13px]',
-              ]}
-            >
-              {h.text}
-            </a>
-          </li>
+          <span
+            data-toc-tick
+            data-target={h.slug}
+            class:list={['h-0.5 rounded-full bg-text-faint transition-colors', h.depth === 3 ? 'ml-2 w-3' : 'w-5']}
+          />
         ))}
-      </ul>
-    </nav>
+      </div>
+      <nav
+        aria-label="목차"
+        class="lg:invisible lg:absolute lg:right-0 lg:top-0 lg:z-10 lg:w-64 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:rounded-xl lg:border lg:border-border lg:bg-surface lg:p-4 lg:opacity-0 lg:shadow-xl lg:transition-opacity lg:group-hover:visible lg:group-hover:opacity-100 lg:group-focus-within:visible lg:group-focus-within:opacity-100"
+      >
+        <p class="mb-3 text-xs font-bold tracking-wide text-text-muted">목차</p>
+        <ul class="space-y-0.5 border-l border-border text-sm">
+          {items.map((h) => (
+            <li>
+              <a
+                href={`#${h.slug}`}
+                data-toc-link
+                data-target={h.slug}
+                class:list={[
+                  '-ml-px block border-l-2 border-transparent py-1 pl-3 text-text-muted transition-colors hover:text-text',
+                  h.depth === 3 && 'pl-6 text-[13px]',
+                ]}
+              >
+                {h.text}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </div>
   )
 }
 
 <script>
   const links = Array.from(document.querySelectorAll<HTMLAnchorElement>('[data-toc-link]'));
+  const ticks = Array.from(document.querySelectorAll<HTMLElement>('[data-toc-tick]'));
 
   function setActive(id: string | null) {
     for (const link of links) {
@@ -49,6 +64,11 @@ const items = headings.filter((h) => h.depth === 2 || h.depth === 3);
       link.classList.toggle('font-bold', active);
       link.classList.toggle('text-text', active);
       link.classList.toggle('text-text-muted', !active);
+    }
+    for (const tick of ticks) {
+      const active = tick.dataset.target === id;
+      tick.classList.toggle('bg-accent', active);
+      tick.classList.toggle('bg-text-faint', !active);
     }
   }
 

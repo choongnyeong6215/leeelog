@@ -16,40 +16,11 @@ export function getPostUrl(post: Post): string {
   return `/${post.data.category}/${post.id}`;
 }
 
-export function getPostsByCategory(posts: Post[], categorySlug: string): Post[] {
-  return posts.filter((post) => post.data.category === categorySlug);
-}
-
-export function getPostsByTag(posts: Post[], tag: string): Post[] {
-  return posts.filter((post) => post.data.tags.includes(tag));
-}
-
-export function getRelatedPosts(current: Post, posts: Post[], limit = 3): Post[] {
-  const others = posts.filter((post) => post.id !== current.id);
-  const scored = others.map((post) => {
-    const sameCategory = post.data.category === current.data.category ? 2 : 0;
-    const sharedTags = post.data.tags.filter((tag) => current.data.tags.includes(tag)).length;
-    return { post, score: sameCategory + sharedTags };
-  });
-  scored.sort((a, b) => b.score - a.score || b.post.data.pubDate.valueOf() - a.post.data.pubDate.valueOf());
-  return scored
-    .filter((s) => s.score > 0)
-    .slice(0, limit)
-    .map((s) => s.post);
-}
-
-export type TagCount = { tag: string; count: number };
-
-export function getAllTags(posts: Post[]): TagCount[] {
-  const counts = new Map<string, number>();
-  for (const post of posts) {
-    for (const tag of post.data.tags) {
-      counts.set(tag, (counts.get(tag) ?? 0) + 1);
-    }
-  }
-  return Array.from(counts.entries())
-    .map(([tag, count]) => ({ tag, count }))
-    .sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag));
+/** 현재 글보다 나중에(더 최신으로) 발행된 글을 가까운 순서대로 반환한다. */
+export function getPostsAfter(posts: Post[], current: Post, limit = 3): Post[] {
+  const idx = posts.findIndex((post) => post.id === current.id);
+  if (idx <= 0) return [];
+  return posts.slice(Math.max(0, idx - limit), idx).reverse();
 }
 
 export type SeriesSummary = { name: string; posts: Post[] };

@@ -2,10 +2,8 @@
 import BaseLayout, { type TocHeading } from './BaseLayout.astro';
 import Badge from '../components/Badge.astro';
 import SeriesWidget from '../components/SeriesWidget.astro';
-import PostCard from '../components/PostCard.astro';
 import Giscus from '../components/Giscus.astro';
-import { PROFILE, getCategoryLeaf } from '../config';
-import { getAllPosts, getRelatedPosts, getSeriesPosts, type Post } from '../lib/posts';
+import { getAllPosts, getPostUrl, getPostsAfter, getSeriesPosts, type Post } from '../lib/posts';
 import { formatDateLong } from '../lib/dates';
 
 interface Props {
@@ -16,9 +14,8 @@ interface Props {
 const { post, headings } = Astro.props;
 const { data } = post;
 
-const categoryInfo = getCategoryLeaf(data.category);
 const allPosts = await getAllPosts();
-const relatedPosts = getRelatedPosts(post, allPosts, 3);
+const nextPosts = getPostsAfter(allPosts, post, 3);
 const seriesPosts = data.series ? getSeriesPosts(allPosts, data.series) : [];
 const seriesIndex = seriesPosts.findIndex((p) => p.id === post.id);
 const isUpdated = Boolean(data.updatedDate && data.updatedDate.valueOf() !== data.pubDate.valueOf());
@@ -34,16 +31,8 @@ const isUpdated = Boolean(data.updatedDate && data.updatedDate.valueOf() !== dat
       )
     }
     <h1 class="text-3xl font-extrabold leading-tight text-text md:text-4xl">{data.title}</h1>
-    <p class="mt-3 text-sm text-text-faint">
-      {formatDateLong(data.pubDate)}
-      {isUpdated && <span>(수정: {formatDateLong(data.updatedDate!)})</span>}
-      · by {PROFILE.nickname}
-    </p>
+    <p class="mt-3 text-sm text-text-faint">{formatDateLong(isUpdated ? data.updatedDate! : data.pubDate)}</p>
     <p class="mt-4 text-base text-text-muted">{data.description}</p>
-    <div class="mt-4 flex flex-wrap items-center gap-2">
-      <Badge variant="category" text={categoryInfo?.leaf.label ?? data.category} />
-      {data.tags.map((tag) => <Badge variant="tag" text={tag} />)}
-    </div>
 
     {
       data.series && seriesPosts.length > 0 && (
@@ -55,16 +44,26 @@ const isUpdated = Boolean(data.updatedDate && data.updatedDate.valueOf() !== dat
       <slot />
     </div>
 
+    <hr class="mt-12 border-border" />
+
+    <div class="mt-6 flex flex-wrap items-center gap-2">
+      {data.tags.map((tag) => <Badge variant="tag" text={tag} />)}
+    </div>
+
     {
-      relatedPosts.length > 0 && (
-        <section class="mt-14">
-          <h2 class="mb-4 text-lg font-bold text-text">이 글과 관련된 다른 게시글을 확인해보세요</h2>
-          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {relatedPosts.map((related) => (
-              <PostCard post={related} />
+      nextPosts.length > 0 && (
+        <div class="mt-6">
+          <p class="mb-2 text-xs font-bold tracking-wide text-text-muted">이후에 작성된 글</p>
+          <ul class="space-y-1.5">
+            {nextPosts.map((next) => (
+              <li>
+                <a href={getPostUrl(next)} class="text-sm text-accent hover:underline">
+                  {next.data.title}
+                </a>
+              </li>
             ))}
-          </div>
-        </section>
+          </ul>
+        </div>
       )
     }
 
