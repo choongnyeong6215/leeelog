@@ -23,7 +23,7 @@ const posts = await getAllPosts();
           <button
             id="load-more"
             type="button"
-            class="hidden inline-flex items-center gap-1.5 text-sm text-text-muted transition-colors hover:text-text"
+            class="hidden items-center gap-1.5 text-sm text-text-muted transition-colors hover:text-text"
           >
             더 보기
             <Icon name="lucide:arrow-down" class="h-4 w-4" />
@@ -48,7 +48,10 @@ const posts = await getAllPosts();
       items[i].classList.remove('hidden');
     }
     visibleCount = next;
-    loadMoreBtn?.classList.toggle('hidden', visibleCount >= items.length);
+    const hasMore = visibleCount < items.length;
+    // hidden과 inline-flex를 동시에 두면 Tailwind 유틸리티 순서에 따라 display가 깨질 수 있어 항상 함께 토글한다.
+    loadMoreBtn?.classList.toggle('hidden', !hasMore);
+    loadMoreBtn?.classList.toggle('inline-flex', hasMore);
   }
 
   items.forEach((item) => item.classList.add('hidden'));
