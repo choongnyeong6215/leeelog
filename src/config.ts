@@ -20,7 +20,7 @@ export type SocialLink = {
   url: string;
 };
 
-// About 페이지와 좌측 사이드바가 이 배열을 공통으로 사용합니다.
+// About 페이지와 홈 인트로 카드가 이 배열을 공통으로 사용합니다.
 export const SOCIAL_LINKS: SocialLink[] = [
   { label: 'GitHub', icon: 'simple-icons:github', url: 'https://github.com/choongnyeong6215' },
   { label: 'Email', icon: 'lucide:mail', url: 'mailto:choong6215@gmail.com' },

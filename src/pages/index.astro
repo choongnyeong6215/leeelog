@@ -1,4 +1,5 @@
 ---
+import { Icon } from 'astro-icon/components';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import BlogIntro from '../components/BlogIntro.astro';
 import PostListItem from '../components/PostListItem.astro';
@@ -9,55 +10,52 @@ const posts = await getAllPosts();
 ---
 
 <BaseLayout title={SITE.title} description={SITE.description}>
-  <BlogIntro />
-  {
-    posts.length > 0 ? (
-      <>
-        <div id="recent-post-list" class="flex flex-col gap-4">
-          {posts.map((post) => (
-            <div data-post-item>
-              <PostListItem post={post} />
-            </div>
-          ))}
-        </div>
-        <div id="recent-post-sentinel" class="h-1" />
-      </>
-    ) : (
-      <p class="text-sm text-text-faint">아직 작성된 글이 없습니다.</p>
-    )
-  }
+  <div class="mx-auto max-w-2xl">
+    <BlogIntro postCount={posts.length} />
+    {
+      posts.length > 0 ? (
+        <>
+          <div id="recent-post-list" class="flex flex-col gap-4">
+            {posts.map((post) => (
+              <div data-post-item>
+                <PostListItem post={post} />
+              </div>
+            ))}
+          </div>
+          <div class="mt-8 flex justify-center">
+            <button
+              id="load-more"
+              type="button"
+              class="hidden inline-flex items-center gap-1.5 text-sm text-text-muted transition-colors hover:text-text"
+            >
+              더 보기
+              <Icon name="lucide:arrow-down" class="h-4 w-4" />
+            </button>
+          </div>
+        </>
+      ) : (
+        <p class="text-center text-sm text-text-faint">아직 작성된 글이 없습니다.</p>
+      )
+    }
+  </div>
 </BaseLayout>
 
 <script>
   const PAGE_SIZE = 10;
   const items = Array.from(document.querySelectorAll<HTMLElement>('[data-post-item]'));
-  const sentinel = document.getElementById('recent-post-sentinel');
+  const loadMoreBtn = document.getElementById('load-more');
   let visibleCount = 0;
-  let observer: IntersectionObserver | null = null;
 
   function revealMore() {
-    if (visibleCount >= items.length) return;
     const next = Math.min(visibleCount + PAGE_SIZE, items.length);
     for (let i = visibleCount; i < next; i++) {
       items[i].classList.remove('hidden');
     }
     visibleCount = next;
-    if (visibleCount >= items.length) {
-      observer?.disconnect();
-      sentinel?.classList.add('hidden');
-    }
+    loadMoreBtn?.classList.toggle('hidden', visibleCount >= items.length);
   }
 
   items.forEach((item) => item.classList.add('hidden'));
   revealMore();
-
-  if (sentinel && items.length > PAGE_SIZE) {
-    observer = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) revealMore();
-      },
-      { rootMargin: '400px' },
-    );
-    observer.observe(sentinel);
-  }
+  loadMoreBtn?.addEventListener('click', revealMore);
 </script>
