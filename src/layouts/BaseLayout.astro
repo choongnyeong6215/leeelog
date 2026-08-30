@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import Header from '../components/Header.astro';
+import SearchModal from '../components/SearchModal.astro';
 import TOC from '../components/TOC.astro';
 import Footer from '../components/Footer.astro';
 import BackToTop from '../components/BackToTop.astro';
@@ -44,6 +45,7 @@ const hasToc = Boolean(headings?.some((h) => h.depth === 2 || h.depth === 3));
   </head>
   <body class="flex min-h-screen flex-col">
     <Header />
+    <SearchModal />
     <div
       class:list={[
         'mx-auto grid w-full max-w-7xl flex-1 grid-cols-1 gap-8 px-4 py-8 lg:gap-10',
