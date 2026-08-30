@@ -82,7 +82,6 @@ import Callout from '../../components/Callout.astro';
 
 ## TODO
 
-- [ ] **로고/사이트 타이틀 확정** — `src/config.ts`의 `SITE.title`이 현재 `'블로그 이름 (테스트)'` placeholder임. 참고하기로 한 별도 문서/기획 확정되면 실제 문구로 교체
 - [ ] `SITE_URL` 실제 도메인 반영 (`astro.config.mjs`) — 프로젝트 사이트(`leeelog`)로 배포한다면 `base: '/leeelog'`도 주석 해제 필요
 - [ ] Giscus 연동 (Discussions 카테고리 확정 → [giscus.app](https://giscus.app)에서 값 발급 → `src/config.ts`의 `GISCUS_CONFIG` 채우기)
 - [x] 반응형 스타일링 1차 (모바일에서 본문이 다른 요소보다 먼저 나오도록 순서 수정, 표 가로 스크롤 처리) — 세부 컴포넌트별 점검은 계속 필요할 수 있음
