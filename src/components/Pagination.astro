@@ -22,7 +22,6 @@ const nextHref = currentPage < totalPages ? pageHref(currentPage + 1) : null;
 
 const navLinkClass =
   'rounded-lg border border-border px-3 py-1.5 text-sm text-text-muted transition-colors hover:bg-surface-hover hover:text-text';
-const navDisabledClass = 'rounded-lg border border-border px-3 py-1.5 text-sm text-text-faint opacity-40';
 const pageLinkClass = (active: boolean) =>
   [
     'flex h-9 w-9 items-center justify-center rounded-lg text-sm font-medium transition-colors',
@@ -32,18 +31,19 @@ const pageLinkClass = (active: boolean) =>
 
 {
   totalPages > 1 && (
-    <nav aria-label="페이지 네비게이션" class="mt-8 flex flex-wrap items-center justify-center gap-2">
-      {prevHref ? (
-        <a href={prevHref} class={navLinkClass}>
-          이전
-        </a>
-      ) : (
-        <span aria-disabled="true" class={navDisabledClass}>
-          이전
-        </span>
-      )}
+    // 이전/다음 유무와 무관하게 페이지 번호 묶음이 항상 중앙(가운데 열)에 오도록 3열 그리드로 구성.
+    // 가운데 "auto" 열이 번호 묶음의 실제 너비를 갖고, 양옆 "1fr" 열이 남는 공간을 동일하게 나눠 가지므로
+    // 한쪽 버튼이 없어도(빈 열이어도) 중앙 정렬이 깨지지 않는다.
+    <nav aria-label="페이지 네비게이션" class="mt-8 grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+      <div class="flex justify-start">
+        {prevHref && (
+          <a href={prevHref} class={navLinkClass}>
+            이전
+          </a>
+        )}
+      </div>
 
-      <div class="flex flex-wrap items-center gap-1">
+      <div class="flex flex-wrap items-center justify-center gap-1">
         {showFirst && (
           <a href={pageHref(1)} class={pageLinkClass(false)}>
             1
@@ -51,7 +51,11 @@ const pageLinkClass = (active: boolean) =>
         )}
         {showLeftEllipsis && <span class="flex h-9 w-9 items-center justify-center text-sm text-text-faint">…</span>}
         {windowPages.map((page) => (
-          <a href={pageHref(page)} aria-current={page === currentPage ? 'page' : undefined} class={pageLinkClass(page === currentPage)}>
+          <a
+            href={pageHref(page)}
+            aria-current={page === currentPage ? 'page' : undefined}
+            class={pageLinkClass(page === currentPage)}
+          >
             {page}
           </a>
         ))}
@@ -63,15 +67,13 @@ const pageLinkClass = (active: boolean) =>
         )}
       </div>
 
-      {nextHref ? (
-        <a href={nextHref} class={navLinkClass}>
-          다음
-        </a>
-      ) : (
-        <span aria-disabled="true" class={navDisabledClass}>
-          다음
-        </span>
-      )}
+      <div class="flex justify-end">
+        {nextHref && (
+          <a href={nextHref} class={navLinkClass}>
+            다음
+          </a>
+        )}
+      </div>
     </nav>
   )
 }
