@@ -6,7 +6,7 @@ import { Icon } from 'astro-icon/components';
   id="search-overlay"
   class="fixed inset-0 z-50 hidden items-start justify-center bg-black/40 p-4 pt-[12vh] backdrop-blur-sm"
 >
-  <div class="w-full max-w-lg overflow-hidden rounded-xl border border-border bg-surface shadow-2xl">
+  <div data-search-box class="w-full max-w-lg overflow-hidden rounded-xl border border-border bg-surface shadow-2xl">
     <div class="flex items-center gap-2 border-b border-border px-4 py-3">
       <Icon name="lucide:search" class="h-4 w-4 shrink-0 text-text-faint" />
       <input
@@ -25,12 +25,15 @@ import { Icon } from 'astro-icon/components';
 </div>
 
 <script>
+  import { animate } from 'motion';
+
   type SearchDoc = { title: string; description: string; url: string; category: string; tags: string[] };
 
   let index: SearchDoc[] | null = null;
   let activeTag: string | null = null;
 
   const overlay = document.getElementById('search-overlay');
+  const box = document.querySelector<HTMLElement>('[data-search-box]');
   const input = document.getElementById('search-input') as HTMLInputElement | null;
   const tagsBar = document.getElementById('search-tags');
   const results = document.getElementById('search-results');
@@ -51,18 +54,39 @@ import { Icon } from 'astro-icon/components';
   function openModal() {
     overlay?.classList.remove('hidden');
     overlay?.classList.add('flex');
+    // 모달이 열려있는 동안 배경 스크롤을 막는다. backdrop-blur가 걸린 오버레이 뒤로
+    // 배경이 계속 스크롤되면 매 프레임 블러를 다시 그려야 해서 버벅거림이 생긴다.
+    document.documentElement.classList.add('overflow-hidden');
+    if (overlay) animate(overlay, { opacity: [0, 1] }, { duration: 0.18 });
+    if (box) animate(box, { opacity: [0, 1], scale: [0.97, 1], y: [-8, 0] }, { duration: 0.2, ease: 'easeOut' });
     // 인덱스 로딩이 끝나기 전에 사용자가 타이핑을 마칠 수 있으므로, 로딩 완료 후 현재 입력값으로 다시 렌더링한다.
     void ensureIndex().then(() => renderResults(search(input?.value ?? '')));
     input?.focus();
   }
 
   function closeModal() {
-    overlay?.classList.add('hidden');
-    overlay?.classList.remove('flex');
-    if (input) input.value = '';
-    activeTag = null;
-    renderTags();
-    renderResults([]);
+    if (!isOpen()) return;
+    document.documentElement.classList.remove('overflow-hidden');
+    const finish = () => {
+      overlay?.classList.add('hidden');
+      overlay?.classList.remove('flex');
+      if (input) input.value = '';
+      activeTag = null;
+      renderTags();
+      renderResults([]);
+    };
+    if (overlay && box) {
+      const animationsDone = Promise.all([
+        animate(overlay, { opacity: [1, 0] }, { duration: 0.15 }).finished,
+        animate(box, { opacity: [1, 0], scale: [1, 0.97], y: [0, -8] }, { duration: 0.15 }).finished,
+      ]);
+      // 탭이 백그라운드로 밀리는 등의 이유로 애니메이션이 끝나지 않는 경우에도
+      // 모달이 영구히 안 닫힌 상태로 남지 않도록 타임아웃으로 정리를 보장한다.
+      const timeout = new Promise((resolve) => setTimeout(resolve, 300));
+      Promise.race([animationsDone, timeout]).then(finish);
+    } else {
+      finish();
+    }
   }
 
   function renderTags() {

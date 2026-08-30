@@ -20,6 +20,7 @@
     "astro": "^7.2.4",
     "astro-icon": "^1.2.0",
     "katex": "^0.18.4",
+    "motion": "^13.1.1",
     "rehype-katex": "^7.0.1",
     "rehype-pretty-code": "^0.14.5",
     "remark-math": "^6.0.0",
